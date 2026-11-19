@@ -40,6 +40,8 @@ export function usePinchGesture({
   const wheelPinchAccumRef = useRef<number>(0);
   const wheelResetTimerRef = useRef<number | null>(null);
   const triggeredGestureRef = useRef<boolean>(false);
+  const touchPinchActiveRef = useRef<boolean>(false);
+  const touchInitialDistRef = useRef<number | null>(null);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -159,8 +161,8 @@ export function usePinchGesture({
         pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
       }
 
-      // Multi-touch 2-finger pinch
-      if (pointersRef.current.size === 2) {
+      // Multi-touch 2-finger pinch (yields to TouchEvent handler when active on iOS/mobile)
+      if (pointersRef.current.size === 2 && !touchPinchActiveRef.current) {
         const pts = Array.from(pointersRef.current.values());
         const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
         const midX = (pts[0].x + pts[1].x) * 0.5;
@@ -228,11 +230,73 @@ export function usePinchGesture({
       }
     };
 
+    // Dedicated non-passive TouchEvent 2-finger pinch handler for iOS Safari / mobile reliability
+    const handleTouchStart = (e: TouchEvent) => {
+      if (
+        e.touches.length === 2 &&
+        (viewMode === 'ABOUT_FULLSCREEN' || viewMode === 'PROJECT_FULLSCREEN')
+      ) {
+        const dx = e.touches[1].clientX - e.touches[0].clientX;
+        const dy = e.touches[1].clientY - e.touches[0].clientY;
+        touchInitialDistRef.current = Math.hypot(dx, dy);
+        touchPinchActiveRef.current = true;
+        triggeredGestureRef.current = false;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!touchPinchActiveRef.current || e.touches.length !== 2) return;
+      if (viewMode !== 'ABOUT_FULLSCREEN' && viewMode !== 'PROJECT_FULLSCREEN') {
+        return;
+      }
+      e.preventDefault();
+
+      const dx = e.touches[1].clientX - e.touches[0].clientX;
+      const dy = e.touches[1].clientY - e.touches[0].clientY;
+      const dist = Math.hypot(dx, dy);
+      const initial = touchInitialDistRef.current;
+      if (!initial || initial < 1) return;
+
+      const ratio = dist / initial;
+      if (viewMode === 'ABOUT_FULLSCREEN') {
+        const progress = Math.max(0, Math.min(1, (1 - ratio) / 0.2));
+        onAboutPinchProgress?.(progress);
+        if (ratio < 0.82 && !triggeredGestureRef.current) {
+          triggeredGestureRef.current = true;
+          touchPinchActiveRef.current = false;
+          touchInitialDistRef.current = null;
+          onAboutPinchProgress?.(0);
+          onPinchOutFromAbout();
+        }
+      } else if (viewMode === 'PROJECT_FULLSCREEN') {
+        if (ratio < 0.82 && !triggeredGestureRef.current) {
+          triggeredGestureRef.current = true;
+          touchPinchActiveRef.current = false;
+          touchInitialDistRef.current = null;
+          onPinchOutFromCatalog();
+        }
+      }
+    };
+
+    const handleTouchEndOrCancel = (e: TouchEvent) => {
+      if (e.touches.length < 2 && touchPinchActiveRef.current) {
+        touchPinchActiveRef.current = false;
+        touchInitialDistRef.current = null;
+        if (!triggeredGestureRef.current && viewMode === 'ABOUT_FULLSCREEN') {
+          onAboutPinchProgress?.(0);
+        }
+      }
+    };
+
     window.addEventListener('wheel', handleWheel, { passive: false });
     window.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUpOrCancel);
     window.addEventListener('pointercancel', handlePointerUpOrCancel);
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleTouchEndOrCancel, { passive: true });
+    window.addEventListener('touchcancel', handleTouchEndOrCancel, { passive: true });
 
     return () => {
       if (wheelResetTimerRef.current) {
@@ -243,6 +307,10 @@ export function usePinchGesture({
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUpOrCancel);
       window.removeEventListener('pointercancel', handlePointerUpOrCancel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEndOrCancel);
+      window.removeEventListener('touchcancel', handleTouchEndOrCancel);
     };
   }, [
     containerRef,

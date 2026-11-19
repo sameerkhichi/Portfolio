@@ -623,7 +623,8 @@ button {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   transition: opacity 0.55s var(--ease-tech), transform 0.55s var(--ease-tech);
-  overflow-y: auto;
+  overflow: hidden;
+  touch-action: none;
 }
 
 .about-overlay.is-exiting {
@@ -818,7 +819,14 @@ button {
   animation: panelSlideRight 0.34s var(--ease-tech) forwards;
   overflow-y: auto;
   overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
   user-select: text;
+}
+
+.overview-drag-handle-wrap {
+  display: none;
 }
 
 .overview-panel::before {
@@ -1337,9 +1345,25 @@ button {
     right: 14px;
     bottom: 14px;
     width: auto;
-    max-height: 54vh;
+    max-height: 58vh;
+    padding-top: 12px;
     border-radius: 30px;
     animation: panelSlideUp 0.34s var(--ease-tech) forwards;
+  }
+
+  .overview-drag-handle-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 2px 0 12px;
+    flex-shrink: 0;
+    touch-action: none;
+  }
+
+  .overview-drag-handle {
+    width: 40px;
+    height: 4px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.28);
   }
 
   .about-overlay {
