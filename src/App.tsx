@@ -17,7 +17,7 @@ import type {
 } from './types/portfolio';
 import { computeNeuralLayout, computeSynapseEdges } from './utils/layoutEngine';
 import { nanotechAudio } from './utils/nanotechAudio';
-import { triggerHaptic } from './utils/haptics';
+import { initHaptics, triggerHaptic } from './utils/haptics';
 
 export function App() {
   const initialSeed = useMemo(() => getSeededPortfolioData(), []);
@@ -84,8 +84,9 @@ export function App() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // Unlock Web Audio API reliably on mobile (touchstart/touchend/click) and desktop
+  // Unlock Web Audio API & pre-mount iOS haptic trigger on mobile and desktop
   useEffect(() => {
+    initHaptics();
     const tryUnlock = () => {
       nanotechAudio.unlock();
       if (nanotechAudio.isRunning()) {

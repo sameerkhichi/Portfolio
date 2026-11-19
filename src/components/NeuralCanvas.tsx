@@ -28,6 +28,8 @@ interface AmbientParticle {
   vy: number;
   size: number;
   alpha: number;
+  twinklePhase: number;
+  isStarHub: boolean;
 }
 
 interface EdgeAnimState {
@@ -122,20 +124,24 @@ export function NeuralCanvas({
     onNodeRevealChange,
   };
 
-  // Initialize ambient neural dust particles once
+  // Initialize ambient starfield & subtle constellation particles once
   useEffect(() => {
     const particles: AmbientParticle[] = [];
-    const count = 88;
+    const count = 175;
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const dist = 60 + Math.random() * 980;
+      // Square-root distribution keeps density even across inner & outer space
+      const dist = 75 + Math.sqrt(Math.random()) * 1320;
+      const isStarHub = i < 20;
       particles.push({
         x: Math.cos(angle) * dist,
         y: Math.sin(angle) * dist,
-        vx: (Math.random() - 0.5) * 0.16,
-        vy: (Math.random() - 0.5) * 0.16,
-        size: 1 + Math.random() * 1.9,
-        alpha: 0.18 + Math.random() * 0.42,
+        vx: (Math.random() - 0.5) * 0.14,
+        vy: (Math.random() - 0.5) * 0.14,
+        size: isStarHub ? 2.1 + Math.random() * 1.1 : 0.9 + Math.random() * 1.65,
+        alpha: isStarHub ? 0.45 + Math.random() * 0.25 : 0.18 + Math.random() * 0.38,
+        twinklePhase: Math.random() * Math.PI * 2,
+        isStarHub,
       });
     }
     particlesRef.current = particles;
@@ -282,39 +288,96 @@ export function NeuralCanvas({
       }
       ctx.restore();
 
-      // 2. Ambient neural dust + dynamic nanotech triangulation filaments near cursor/motion
+      // 2. Ambient starfield, persistent subtle constellations & dynamic cursor mesh
       const particles = particlesRef.current;
+      const visibleParticles: AmbientParticle[] = [];
       const nearbyParticles: AmbientParticle[] = [];
+      const fieldBound = 1420;
 
       for (const p of particles) {
         p.x += p.vx;
         p.y += p.vy;
-        if (!isInViewport(p.x, p.y, 140)) continue;
+        if (p.x > fieldBound) p.x = -fieldBound;
+        else if (p.x < -fieldBound) p.x = fieldBound;
+        if (p.y > fieldBound) p.y = -fieldBound;
+        else if (p.y < -fieldBound) p.y = fieldBound;
+
+        if (!isInViewport(p.x, p.y, 160)) continue;
+        visibleParticles.push(p);
+
+        const twinkle = 0.78 + 0.22 * Math.sin(now * 0.0014 + p.twinklePhase);
+        const dotRadius = p.size / Math.sqrt(cam.zoom);
+
+        if (p.isStarHub) {
+          const halo = ctx.createRadialGradient(
+            p.x,
+            p.y,
+            0,
+            p.x,
+            p.y,
+            dotRadius * 3.4
+          );
+          halo.addColorStop(0, `rgba(165, 243, 252, ${p.alpha * 0.75 * twinkle})`);
+          halo.addColorStop(0.45, `rgba(0, 240, 255, ${p.alpha * 0.22 * twinkle})`);
+          halo.addColorStop(1, 'rgba(0, 240, 255, 0)');
+          ctx.fillStyle = halo;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, dotRadius * 3.4, 0, Math.PI * 2);
+          ctx.fill();
+        }
 
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size / Math.sqrt(cam.zoom), 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0, 240, 255, ${p.alpha * 0.65})`;
+        ctx.arc(p.x, p.y, dotRadius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0, 240, 255, ${p.alpha * 0.72 * twinkle})`;
         ctx.fill();
 
         const distToFocus = pointer.active
           ? Math.hypot(p.x - pointerWorldX, p.y - pointerWorldY)
           : Math.hypot(p.x - cam.x, p.y - cam.y);
-        if (distToFocus < 240 / Math.max(0.6, cam.zoom)) {
+        if (distToFocus < 270 / Math.max(0.6, cam.zoom)) {
           nearbyParticles.push(p);
         }
       }
 
-      // Dynamic nanotech micro-mesh weaving around pointer or during active panning
+      // Subtle always-on background constellations across the node view (capped per star to stay airy)
+      if (mode !== 'ABOUT_FULLSCREEN' && visibleParticles.length > 1) {
+        const linksPerStar = new Uint8Array(visibleParticles.length);
+        const maxDist = 152;
+        ctx.lineWidth = 0.65 / cam.zoom;
+
+        for (let i = 0; i < visibleParticles.length; i++) {
+          if (linksPerStar[i] >= 2) continue;
+          const a = visibleParticles[i];
+          for (let j = i + 1; j < visibleParticles.length; j++) {
+            if (linksPerStar[j] >= 2) continue;
+            const b = visibleParticles[j];
+            const d = Math.hypot(b.x - a.x, b.y - a.y);
+            if (d < maxDist) {
+              const alpha = (1 - d / maxDist) * 0.11;
+              ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+              linksPerStar[i]++;
+              linksPerStar[j]++;
+              if (linksPerStar[i] >= 2) break;
+            }
+          }
+        }
+      }
+
+      // Dynamic nanotech micro-mesh weaving brighter around pointer or during active panning
       if (mode !== 'ABOUT_FULLSCREEN' && nearbyParticles.length > 1) {
-        const meshStrength = Math.min(1, 0.28 + velocity * 0.06);
+        const meshStrength = Math.min(1, 0.34 + velocity * 0.06);
         ctx.lineWidth = 0.85 / cam.zoom;
         for (let i = 0; i < nearbyParticles.length; i++) {
           for (let j = i + 1; j < nearbyParticles.length; j++) {
             const a = nearbyParticles[i];
             const b = nearbyParticles[j];
             const d = Math.hypot(b.x - a.x, b.y - a.y);
-            if (d < 155) {
-              const alpha = (1 - d / 155) * 0.22 * meshStrength;
+            if (d < 165) {
+              const alpha = (1 - d / 165) * 0.24 * meshStrength;
               ctx.strokeStyle = `rgba(0, 240, 255, ${alpha})`;
               ctx.beginPath();
               ctx.moveTo(a.x, a.y);
