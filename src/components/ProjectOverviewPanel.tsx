@@ -97,7 +97,7 @@ export function ProjectOverviewPanel({
               className="secondary-action-btn"
               onMouseEnter={() => nanotechAudio.playNodeHover()}
             >
-              <Github size={15} color="#00F0FF" />
+              <Github size={15} color="var(--aqua-core)" />
               <span>GitHub</span>
             </a>
           )}
@@ -109,7 +109,7 @@ export function ProjectOverviewPanel({
               className="secondary-action-btn"
               onMouseEnter={() => nanotechAudio.playNodeHover()}
             >
-              <ExternalLink size={15} color="#00F0FF" />
+              <ExternalLink size={15} color="var(--aqua-core)" />
               <span>Live Demo</span>
             </a>
           )}

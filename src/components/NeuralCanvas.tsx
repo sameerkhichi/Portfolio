@@ -6,12 +6,14 @@ import type {
   ViewMode,
   YearRing,
 } from '../types/portfolio';
+import type { AccentTheme } from '../data/themes';
 import { nanotechAudio } from '../utils/nanotechAudio';
 
 interface NeuralCanvasProps {
   nodes: PositionedProjectNode[];
   edges: SynapseEdge[];
   yearRings: YearRing[];
+  theme: AccentTheme;
   cameraRef: React.MutableRefObject<CameraState>;
   velocityRef: React.MutableRefObject<number>;
   pointerScreenRef: React.MutableRefObject<{ x: number; y: number; active: boolean }>;
@@ -91,6 +93,7 @@ export function NeuralCanvas({
   nodes,
   edges,
   yearRings,
+  theme,
   cameraRef,
   velocityRef,
   pointerScreenRef,
@@ -112,6 +115,7 @@ export function NeuralCanvas({
     nodes,
     edges,
     yearRings,
+    theme,
     viewMode,
     selectedNodeId,
     hoveredNodeId,
@@ -122,6 +126,7 @@ export function NeuralCanvas({
     nodes,
     edges,
     yearRings,
+    theme,
     viewMode,
     selectedNodeId,
     hoveredNodeId,
@@ -225,12 +230,19 @@ export function NeuralCanvas({
         nodes: currentNodes,
         edges: currentEdges,
         yearRings: currentYearRings,
+        theme: activeTheme,
         viewMode: mode,
         selectedNodeId: selectedId,
         hoveredNodeId: hoveredId,
         activeFilter: filter,
         onNodeRevealChange: notifyRevealed,
       } = propsRef.current;
+
+      const accentRgb = activeTheme.accentRgb;
+      const glowRgb = activeTheme.glowRgb;
+      const secondaryRgb = activeTheme.secondaryRgb;
+      const softRgb = activeTheme.softRgb;
+      const midRgb = activeTheme.midRgb;
 
       ctx.clearRect(0, 0, width, height);
 
@@ -246,8 +258,8 @@ export function NeuralCanvas({
         coreScreenY,
         glowRadius
       );
-      bgGlow.addColorStop(0, 'rgba(0, 240, 255, 0.13)');
-      bgGlow.addColorStop(0.45, 'rgba(8, 145, 178, 0.045)');
+      bgGlow.addColorStop(0, `rgba(${accentRgb}, 0.13)`);
+      bgGlow.addColorStop(0.45, `rgba(${midRgb}, 0.045)`);
       bgGlow.addColorStop(1, 'rgba(4, 8, 15, 0)');
       ctx.fillStyle = bgGlow;
       ctx.fillRect(0, 0, width, height);
@@ -273,14 +285,14 @@ export function NeuralCanvas({
       for (const ring of currentYearRings) {
         ctx.beginPath();
         ctx.arc(0, 0, ring.outerRadius, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(0, 240, 255, 0.11)';
+        ctx.strokeStyle = `rgba(${accentRgb}, 0.11)`;
         ctx.lineWidth = 1 / cam.zoom;
         ctx.setLineDash([5 / cam.zoom, 9 / cam.zoom]);
         ctx.stroke();
 
         if (mode !== 'ABOUT_FULLSCREEN' && cam.zoom > 0.35) {
           ctx.setLineDash([]);
-          ctx.fillStyle = 'rgba(0, 240, 255, 0.42)';
+          ctx.fillStyle = `rgba(${accentRgb}, 0.42)`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'top';
           ctx.font = `500 ${Math.max(9, 11 / cam.zoom)}px "JetBrains Mono", monospace`;
@@ -318,9 +330,9 @@ export function NeuralCanvas({
             p.y,
             dotRadius * 3.4
           );
-          halo.addColorStop(0, `rgba(165, 243, 252, ${p.alpha * 0.75 * twinkle})`);
-          halo.addColorStop(0.45, `rgba(0, 240, 255, ${p.alpha * 0.22 * twinkle})`);
-          halo.addColorStop(1, 'rgba(0, 240, 255, 0)');
+          halo.addColorStop(0, `rgba(${softRgb}, ${p.alpha * 0.75 * twinkle})`);
+          halo.addColorStop(0.45, `rgba(${accentRgb}, ${p.alpha * 0.22 * twinkle})`);
+          halo.addColorStop(1, `rgba(${accentRgb}, 0)`);
           ctx.fillStyle = halo;
           ctx.beginPath();
           ctx.arc(p.x, p.y, dotRadius * 3.4, 0, Math.PI * 2);
@@ -329,7 +341,7 @@ export function NeuralCanvas({
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, dotRadius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0, 240, 255, ${p.alpha * 0.72 * twinkle})`;
+        ctx.fillStyle = `rgba(${accentRgb}, ${p.alpha * 0.72 * twinkle})`;
         ctx.fill();
 
         const distToFocus = pointer.active
@@ -355,7 +367,7 @@ export function NeuralCanvas({
             const d = Math.hypot(b.x - a.x, b.y - a.y);
             if (d < maxDist) {
               const alpha = (1 - d / maxDist) * 0.11;
-              ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
+              ctx.strokeStyle = `rgba(${secondaryRgb}, ${alpha})`;
               ctx.beginPath();
               ctx.moveTo(a.x, a.y);
               ctx.lineTo(b.x, b.y);
@@ -379,7 +391,7 @@ export function NeuralCanvas({
             const d = Math.hypot(b.x - a.x, b.y - a.y);
             if (d < 165) {
               const alpha = (1 - d / 165) * 0.24 * meshStrength;
-              ctx.strokeStyle = `rgba(0, 240, 255, ${alpha})`;
+              ctx.strokeStyle = `rgba(${accentRgb}, ${alpha})`;
               ctx.beginPath();
               ctx.moveTo(a.x, a.y);
               ctx.lineTo(b.x, b.y);
@@ -511,8 +523,8 @@ export function NeuralCanvas({
               ? 0.92
               : 0.2 + edge.recencyWeight * 0.34;
           strokeColor = isHighlighted
-            ? `rgba(0, 240, 255, ${baseAlpha})`
-            : `rgba(34, 211, 238, ${baseAlpha})`;
+            ? `rgba(${accentRgb}, ${baseAlpha})`
+            : `rgba(${glowRgb}, ${baseAlpha})`;
           lineWidth = (isHighlighted ? 2.6 : 1.15 + edge.recencyWeight * 0.95) / Math.sqrt(cam.zoom);
         } else {
           const secAlpha = isDimmedByFilter
@@ -520,7 +532,7 @@ export function NeuralCanvas({
             : isHighlighted
               ? 0.52
               : 0.16;
-          strokeColor = `rgba(14, 165, 233, ${secAlpha})`;
+          strokeColor = `rgba(${secondaryRgb}, ${secAlpha})`;
           lineWidth = (isHighlighted ? 1.5 : 0.9) / Math.sqrt(cam.zoom);
         }
 
@@ -528,7 +540,7 @@ export function NeuralCanvas({
         ctx.strokeStyle = strokeColor;
         ctx.lineWidth = lineWidth;
         if (isHighlighted) {
-          ctx.shadowColor = 'rgba(0, 240, 255, 0.85)';
+          ctx.shadowColor = `rgba(${accentRgb}, 0.85)`;
           ctx.shadowBlur = 14;
         }
 
@@ -558,8 +570,8 @@ export function NeuralCanvas({
             sparkRadius
           );
           sparkGrad.addColorStop(0, `rgba(255, 255, 255, ${sparkFade})`);
-          sparkGrad.addColorStop(0.35, `rgba(0, 240, 255, ${0.95 * sparkFade})`);
-          sparkGrad.addColorStop(1, 'rgba(0, 240, 255, 0)');
+          sparkGrad.addColorStop(0.35, `rgba(${accentRgb}, ${0.95 * sparkFade})`);
+          sparkGrad.addColorStop(1, `rgba(${accentRgb}, 0)`);
           ctx.fillStyle = sparkGrad;
           ctx.beginPath();
           ctx.arc(tipX, tipY, sparkRadius, 0, Math.PI * 2);
@@ -571,7 +583,7 @@ export function NeuralCanvas({
           const burstR = (1 - state.sparkBurst) * 44 + 14;
           ctx.beginPath();
           ctx.arc(edge.toX, edge.toY, burstR, 0, Math.PI * 2);
-          ctx.strokeStyle = `rgba(0, 240, 255, ${state.sparkBurst * 0.78})`;
+          ctx.strokeStyle = `rgba(${accentRgb}, ${state.sparkBurst * 0.78})`;
           ctx.lineWidth = 1.8 / Math.sqrt(cam.zoom);
           ctx.stroke();
         }
@@ -618,8 +630,8 @@ export function NeuralCanvas({
                 pulseRadius * 2.5
               );
               pulseGrad.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
-              pulseGrad.addColorStop(0.4, `rgba(0, 240, 255, ${0.9 * alpha})`);
-              pulseGrad.addColorStop(1, 'rgba(0, 240, 255, 0)');
+              pulseGrad.addColorStop(0.4, `rgba(${accentRgb}, ${0.9 * alpha})`);
+              pulseGrad.addColorStop(1, `rgba(${accentRgb}, 0)`);
               ctx.fillStyle = pulseGrad;
               ctx.beginPath();
               ctx.arc(pt.x, pt.y, pulseRadius * 2.5, 0, Math.PI * 2);

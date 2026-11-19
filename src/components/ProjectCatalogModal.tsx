@@ -46,7 +46,7 @@ export function ProjectCatalogModal({
               className="hud-pill hud-pill-btn"
               onClick={onBackToNetwork}
             >
-              <ArrowLeft size={15} color="#00F0FF" />
+              <ArrowLeft size={15} color="var(--aqua-core)" />
               <span>Back to Network</span>
             </button>
 
@@ -55,7 +55,7 @@ export function ProjectCatalogModal({
               className="hud-pill hud-pill-btn"
               onClick={onOpenAbout}
             >
-              <User size={15} color="#00F0FF" />
+              <User size={15} color="var(--aqua-core)" />
               <span>About Me</span>
             </button>
           </div>
@@ -70,7 +70,7 @@ export function ProjectCatalogModal({
                 style={{ textDecoration: 'none' }}
                 onMouseEnter={() => nanotechAudio.playNodeHover()}
               >
-                <Github size={15} color="#00F0FF" />
+                <Github size={15} color="var(--aqua-core)" />
                 <span>View Repository</span>
               </a>
             )}
@@ -83,7 +83,7 @@ export function ProjectCatalogModal({
                 style={{ textDecoration: 'none' }}
                 onMouseEnter={() => nanotechAudio.playNodeHover()}
               >
-                <ExternalLink size={15} color="#00F0FF" />
+                <ExternalLink size={15} color="var(--aqua-core)" />
                 <span>Live Demo</span>
               </a>
             )}

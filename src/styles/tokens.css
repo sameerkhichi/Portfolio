@@ -6,16 +6,26 @@
   --bg-surface-elevated: #0f1e35;
   --bg-glass: rgba(7, 15, 28, 0.8);
   --bg-glass-strong: rgba(5, 11, 21, 0.92);
+  --bg-tint: #091628;
 
-  /* Bioluminescent aqua tech accents */
+  /* Dynamic accent theme tokens (default: Aqua) */
+  --accent-rgb: 0, 240, 255;
+  --glow-rgb: 34, 211, 238;
+  --secondary-rgb: 14, 165, 233;
+  --soft-rgb: 165, 243, 252;
+
   --aqua-core: #00f0ff;
   --aqua-bright: #5ff6ff;
   --aqua-glow: #22d3ee;
   --aqua-mid: #0891b2;
   --aqua-deep: #0e7490;
-  --aqua-dim: rgba(0, 240, 255, 0.14);
-  --aqua-border: rgba(0, 240, 255, 0.28);
-  --aqua-border-strong: rgba(0, 240, 255, 0.62);
+  --gradient-end: #0ea5e9;
+  --hero-mid: #bae6fd;
+  --btn-ink: #02121f;
+
+  --aqua-dim: rgba(var(--accent-rgb), 0.14);
+  --aqua-border: rgba(var(--accent-rgb), 0.28);
+  --aqua-border-strong: rgba(var(--accent-rgb), 0.62);
 
   /* Typography colors */
   --text-primary: #eff8ff;
@@ -23,10 +33,10 @@
   --text-muted: #5c7591;
 
   /* Shadows & glows */
-  --glow-sm: 0 0 12px rgba(0, 240, 255, 0.25);
-  --glow-md: 0 0 24px rgba(0, 240, 255, 0.32), 0 0 60px rgba(0, 240, 255, 0.12);
-  --glow-lg: 0 0 40px rgba(0, 240, 255, 0.42), 0 0 90px rgba(14, 165, 233, 0.18);
-  --panel-shadow: 0 24px 64px rgba(0, 0, 0, 0.65), 0 0 1px rgba(0, 240, 255, 0.5);
+  --glow-sm: 0 0 12px rgba(var(--accent-rgb), 0.25);
+  --glow-md: 0 0 24px rgba(var(--accent-rgb), 0.32), 0 0 60px rgba(var(--accent-rgb), 0.12);
+  --glow-lg: 0 0 40px rgba(var(--accent-rgb), 0.42), 0 0 90px rgba(var(--secondary-rgb), 0.18);
+  --panel-shadow: 0 24px 64px rgba(0, 0, 0, 0.65), 0 0 1px rgba(var(--accent-rgb), 0.5);
 
   /* Fonts */
   --font-display: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;

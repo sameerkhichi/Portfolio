@@ -10,6 +10,7 @@ import {
   VolumeX,
 } from 'lucide-react';
 import { CORE_INITIALS } from '../data/portfolioConfig';
+import type { AccentTheme, AccentThemeId } from '../data/themes';
 import {
   PROJECT_CATEGORIES,
   type CameraState,
@@ -21,6 +22,7 @@ import {
   type YearRing,
 } from '../types/portfolio';
 import { NeuralCanvas } from './NeuralCanvas';
+import { ThemePicker } from './ThemePicker';
 import { nanotechAudio } from '../utils/nanotechAudio';
 import { triggerHaptic } from '../utils/haptics';
 
@@ -29,6 +31,8 @@ interface NeuralNetworkViewProps {
   nodes: PositionedProjectNode[];
   edges: SynapseEdge[];
   yearRings: YearRing[];
+  theme: AccentTheme;
+  onSelectTheme: (id: AccentThemeId) => void;
   camera: CameraState;
   cameraRef: React.MutableRefObject<CameraState>;
   velocityRef: React.MutableRefObject<number>;
@@ -54,6 +58,8 @@ export function NeuralNetworkView({
   nodes,
   edges,
   yearRings,
+  theme,
+  onSelectTheme,
   camera,
   cameraRef,
   velocityRef,
@@ -76,6 +82,7 @@ export function NeuralNetworkView({
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<ProjectCategory | null>(null);
   const [revealedNodeIds, setRevealedNodeIds] = useState<Set<string>>(new Set());
+  const [themeMenuOpen, setThemeMenuOpen] = useState<boolean>(false);
   const filterStripRef = useRef<HTMLDivElement | null>(null);
   const [filterScrollState, setFilterScrollState] = useState({
     canLeft: false,
@@ -145,6 +152,7 @@ export function NeuralNetworkView({
         nodes={nodes}
         edges={edges}
         yearRings={yearRings}
+        theme={theme}
         cameraRef={cameraRef}
         velocityRef={velocityRef}
         pointerScreenRef={pointerScreenRef}
@@ -260,9 +268,31 @@ export function NeuralNetworkView({
       <div className={`network-hud ${!showInteractiveGraph ? 'is-hidden' : ''}`}>
         <div className="hud-top">
           <div className="hud-brand-group">
-            <div className="hud-pill">
-              <span className="hud-status-dot" />
-              <strong>{profile.name}</strong>
+            <div className="theme-trigger-wrap">
+              <button
+                type="button"
+                data-theme-trigger="true"
+                className="hud-pill hud-pill-btn"
+                onClick={() => {
+                  triggerHaptic('light');
+                  nanotechAudio.playNodeHover();
+                  setThemeMenuOpen((prev) => !prev);
+                }}
+                aria-haspopup="menu"
+                aria-expanded={themeMenuOpen}
+                title="Change accent theme"
+              >
+                <span className="hud-status-dot" />
+                <strong>{profile.name}</strong>
+              </button>
+
+              <ThemePicker
+                open={themeMenuOpen}
+                activeThemeId={theme.id}
+                align="left"
+                onSelect={onSelectTheme}
+                onClose={() => setThemeMenuOpen(false)}
+              />
             </div>
 
             <button
@@ -270,7 +300,7 @@ export function NeuralNetworkView({
               className="hud-pill hud-pill-btn"
               onClick={onOpenAbout}
             >
-              <User size={15} color="#00F0FF" />
+              <User size={15} color="var(--aqua-core)" />
               <span>About Me</span>
             </button>
           </div>
@@ -343,7 +373,7 @@ export function NeuralNetworkView({
               aria-label={isMuted ? 'Unmute nanotech sound effects' : 'Mute nanotech sound effects'}
               title={isMuted ? 'Enable Nanotech SFX' : 'Mute Nanotech SFX'}
             >
-              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} color="#00F0FF" />}
+              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} color="var(--aqua-core)" />}
             </button>
           </div>
         </div>

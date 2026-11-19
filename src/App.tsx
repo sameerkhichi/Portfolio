@@ -16,6 +16,13 @@ import type {
   ViewMode,
 } from './types/portfolio';
 import {
+  applyThemeToDocument,
+  getThemeById,
+  loadSavedThemeId,
+  saveThemeId,
+  type AccentThemeId,
+} from './data/themes';
+import {
   computeNeuralLayout,
   computeSynapseEdges,
   computeYearRings,
@@ -34,6 +41,8 @@ export function App() {
   const [aboutPinchProgress, setAboutPinchProgress] = useState<number>(0);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(() => nanotechAudio.isMuted());
+  const [themeId, setThemeId] = useState<AccentThemeId>(() => loadSavedThemeId());
+  const activeTheme = useMemo(() => getThemeById(themeId), [themeId]);
   const [viewport, setViewport] = useState(() => ({
     width: typeof window !== 'undefined' ? window.innerWidth : 1280,
     height: typeof window !== 'undefined' ? window.innerHeight : 800,
@@ -66,6 +75,16 @@ export function App() {
     () => nodes.find((n) => n.project.id === selectedNodeId) ?? null,
     [nodes, selectedNodeId]
   );
+
+  // Apply active accent theme tokens to document root
+  useEffect(() => {
+    applyThemeToDocument(activeTheme);
+  }, [activeTheme]);
+
+  const handleSelectTheme = useCallback((nextId: AccentThemeId) => {
+    setThemeId(nextId);
+    saveThemeId(nextId);
+  }, []);
 
   // Hydrate live GitHub profile bio & public repositories
   useEffect(() => {
@@ -227,6 +246,8 @@ export function App() {
         nodes={nodes}
         edges={edges}
         yearRings={yearRings}
+        theme={activeTheme}
+        onSelectTheme={handleSelectTheme}
         camera={camera}
         cameraRef={cameraRef}
         velocityRef={velocityRef}
@@ -264,6 +285,8 @@ export function App() {
         visible={viewMode === 'ABOUT_FULLSCREEN'}
         pinchProgress={aboutPinchProgress}
         isMuted={isMuted}
+        theme={activeTheme}
+        onSelectTheme={handleSelectTheme}
         onToggleMute={handleToggleMute}
         onOpenProjectLibrary={openProjectLibrary}
       />
