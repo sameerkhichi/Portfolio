@@ -8,6 +8,11 @@
 
 const STORAGE_MUTE_KEY = 'neural_portfolio_audio_muted';
 const METALLIC_RATIOS = [1.0, 1.47, 2.09, 2.86, 3.92];
+const MASTER_VOLUME = 0.36;
+
+interface AudioSessionLike {
+  type?: 'auto' | 'playback' | 'transient' | 'transient-solo' | 'ambient' | 'play-and-record';
+}
 
 class NanotechAudioEngine {
   private ctx: AudioContext | null = null;
@@ -15,6 +20,7 @@ class NanotechAudioEngine {
   private compressor: DynamicsCompressorNode | null = null;
   private noiseBuffer: AudioBuffer | null = null;
   private muted: boolean = false;
+  private primedSilentBuffer = false;
   private lastMovementTickAt = 0;
   private lastHoverAt = 0;
 
@@ -48,8 +54,16 @@ class NanotechAudioEngine {
     this.muted = muted;
     this.persistMute(muted);
     if (this.masterGain && this.ctx) {
-      this.masterGain.gain.setTargetAtTime(muted ? 0 : 0.24, this.ctx.currentTime, 0.02);
+      this.masterGain.gain.setTargetAtTime(
+        muted ? 0 : MASTER_VOLUME,
+        this.ctx.currentTime,
+        0.02
+      );
     }
+  }
+
+  public isRunning(): boolean {
+    return this.ctx?.state === 'running';
   }
 
   public toggleMute(): boolean {
@@ -64,6 +78,17 @@ class NanotechAudioEngine {
 
   public unlock(): boolean {
     if (typeof window === 'undefined') return false;
+
+    // On iOS Safari 17+, opt into playback audio session so SFX aren't silenced by the ringer switch
+    try {
+      const nav = navigator as Navigator & { audioSession?: AudioSessionLike };
+      if (nav.audioSession && nav.audioSession.type !== 'playback') {
+        nav.audioSession.type = 'playback';
+      }
+    } catch {
+      // Ignore unsupported audioSession environments
+    }
+
     const AudioCtx =
       window.AudioContext ||
       (window as unknown as { webkitAudioContext?: typeof AudioContext })
@@ -74,14 +99,14 @@ class NanotechAudioEngine {
       try {
         this.ctx = new AudioCtx();
         this.compressor = this.ctx.createDynamicsCompressor();
-        this.compressor.threshold.value = -16;
+        this.compressor.threshold.value = -14;
         this.compressor.knee.value = 18;
         this.compressor.ratio.value = 6;
         this.compressor.attack.value = 0.003;
         this.compressor.release.value = 0.12;
 
         this.masterGain = this.ctx.createGain();
-        this.masterGain.gain.value = this.muted ? 0 : 0.24;
+        this.masterGain.gain.value = this.muted ? 0 : MASTER_VOLUME;
 
         this.compressor.connect(this.masterGain);
         this.masterGain.connect(this.ctx.destination);
@@ -92,7 +117,21 @@ class NanotechAudioEngine {
       }
     }
 
-    if (this.ctx.state === 'suspended') {
+    // Play a 1-sample silent buffer on first user gesture (required by iOS WebKit to unlock audio output)
+    if (!this.primedSilentBuffer && this.ctx) {
+      try {
+        const silentBuf = this.ctx.createBuffer(1, 1, 22050);
+        const src = this.ctx.createBufferSource();
+        src.buffer = silentBuf;
+        src.connect(this.ctx.destination);
+        src.start(0);
+        this.primedSilentBuffer = true;
+      } catch {
+        // Ignore if context cannot start yet
+      }
+    }
+
+    if (this.ctx.state !== 'running') {
       void this.ctx.resume().catch(() => {
         // Browser may still require direct user gesture
       });
@@ -113,16 +152,42 @@ class NanotechAudioEngine {
     return buffer;
   }
 
-  private ensureReady(): boolean {
+  /**
+   * Executes a sound callback once the AudioContext is running, handling mobile
+   * async `resume()` cleanly instead of dropping the sound on the first tap.
+   */
+  private withReadyContext(
+    callback: (ctx: AudioContext) => void,
+    allowAsyncResume = true
+  ): boolean {
     if (this.muted) return false;
     if (!this.ctx || !this.compressor) {
       if (!this.unlock()) return false;
     }
     if (!this.ctx || !this.compressor) return false;
-    if (this.ctx.state === 'suspended') {
-      void this.ctx.resume().catch(() => {});
+
+    if (this.ctx.state === 'running') {
+      callback(this.ctx);
+      return true;
     }
-    return this.ctx.state === 'running';
+
+    if (!allowAsyncResume) {
+      return false;
+    }
+
+    const ctx = this.ctx;
+    void ctx
+      .resume()
+      .then(() => {
+        if (!this.muted && this.ctx === ctx && ctx.state === 'running') {
+          callback(ctx);
+        }
+      })
+      .catch(() => {
+        // Still waiting for user gesture
+      });
+
+    return true;
   }
 
   /**
@@ -237,63 +302,63 @@ class NanotechAudioEngine {
    * Produces a shimmering cascading metallic nanotech trickle radiating outward.
    */
   public playAssembleCascade(particleCount = 15): void {
-    if (!this.ensureReady() || !this.ctx) return;
-    const now = this.ctx.currentTime + 0.01;
+    this.withReadyContext((ctx) => {
+      const now = ctx.currentTime + 0.01;
+      this.scheduleMagneticSweep(now, 240, 118, 0.34, 0.1);
 
-    this.scheduleMagneticSweep(now, 240, 118, 0.34, 0.085);
+      let offset = 0;
+      for (let i = 0; i < particleCount; i++) {
+        const progress = i / Math.max(1, particleCount - 1);
+        const step = 0.016 + progress * 0.022 + Math.random() * 0.01;
+        const baseFreq = 1220 + progress * 1450 + (Math.random() - 0.5) * 260;
+        const pan = Math.sin(i * 1.7) * 0.65;
+        const gain = (0.14 - progress * 0.05) * (0.85 + Math.random() * 0.3);
 
-    let offset = 0;
-    for (let i = 0; i < particleCount; i++) {
-      const progress = i / Math.max(1, particleCount - 1);
-      // Slight accelerating-then-settling trickle cadence
-      const step = 0.016 + progress * 0.022 + Math.random() * 0.01;
-      const baseFreq = 1280 + progress * 1450 + (Math.random() - 0.5) * 260;
-      const pan = Math.sin(i * 1.7) * 0.65;
-      const gain = (0.12 - progress * 0.045) * (0.85 + Math.random() * 0.3);
-
-      this.scheduleMetallicGrain({
-        startTime: now + offset,
-        baseFreq,
-        gain,
-        decay: 0.032 + Math.random() * 0.024,
-        pan,
-        bright: true,
-      });
-      offset += step;
-    }
+        this.scheduleMetallicGrain({
+          startTime: now + offset,
+          baseFreq,
+          gain,
+          decay: 0.035 + Math.random() * 0.024,
+          pan,
+          bright: true,
+        });
+        offset += step;
+      }
+    });
   }
 
   /**
    * Played when zooming into a node/catalog or zooming back out.
    */
   public playZoomTransition(direction: 'in' | 'out'): void {
-    if (!this.ensureReady() || !this.ctx) return;
-    const now = this.ctx.currentTime + 0.008;
-    const grains = 9;
+    this.withReadyContext((ctx) => {
+      const now = ctx.currentTime + 0.008;
+      const grains = 9;
 
-    this.scheduleMagneticSweep(
-      now,
-      direction === 'in' ? 125 : 230,
-      direction === 'in' ? 250 : 120,
-      0.24,
-      0.075
-    );
+      this.scheduleMagneticSweep(
+        now,
+        direction === 'in' ? 125 : 230,
+        direction === 'in' ? 250 : 120,
+        0.24,
+        0.09
+      );
 
-    let offset = 0;
-    for (let i = 0; i < grains; i++) {
-      const t = i / (grains - 1);
-      const curve = direction === 'in' ? t : 1 - t;
-      const baseFreq = 1150 + curve * 1650 + (Math.random() - 0.5) * 180;
-      this.scheduleMetallicGrain({
-        startTime: now + offset,
-        baseFreq,
-        gain: 0.095 * (1 - t * 0.35),
-        decay: 0.026 + curve * 0.018,
-        pan: (direction === 'in' ? 1 : -1) * (t - 0.5) * 0.7,
-        bright: true,
-      });
-      offset += 0.017 + Math.random() * 0.011;
-    }
+      let offset = 0;
+      for (let i = 0; i < grains; i++) {
+        const t = i / (grains - 1);
+        const curve = direction === 'in' ? t : 1 - t;
+        const baseFreq = 1150 + curve * 1650 + (Math.random() - 0.5) * 180;
+        this.scheduleMetallicGrain({
+          startTime: now + offset,
+          baseFreq,
+          gain: 0.11 * (1 - t * 0.35),
+          decay: 0.028 + curve * 0.018,
+          pan: (direction === 'in' ? 1 : -1) * (t - 0.5) * 0.7,
+          bright: true,
+        });
+        offset += 0.017 + Math.random() * 0.011;
+      }
+    });
   }
 
   /**
@@ -308,23 +373,22 @@ class NanotechAudioEngine {
     }
     this.lastMovementTickAt = nowMs;
 
-    if (!this.ensureReady() || !this.ctx) return false;
-    const now = this.ctx.currentTime + 0.004;
-    const clampedIntensity = Math.max(0.15, Math.min(1, intensity));
-    const microCount = clampedIntensity > 0.65 ? 3 : 2;
+    return this.withReadyContext((ctx) => {
+      const now = ctx.currentTime + 0.004;
+      const clampedIntensity = Math.max(0.15, Math.min(1, intensity));
+      const microCount = clampedIntensity > 0.65 ? 3 : 2;
 
-    for (let i = 0; i < microCount; i++) {
-      this.scheduleMetallicGrain({
-        startTime: now + i * (0.016 + Math.random() * 0.01),
-        baseFreq: 1650 + Math.random() * 1400 + i * 210,
-        gain: 0.042 * clampedIntensity,
-        decay: 0.02 + Math.random() * 0.014,
-        pan: panHint + (Math.random() - 0.5) * 0.35,
-        bright: true,
-      });
-    }
-
-    return true;
+      for (let i = 0; i < microCount; i++) {
+        this.scheduleMetallicGrain({
+          startTime: now + i * (0.016 + Math.random() * 0.01),
+          baseFreq: 1550 + Math.random() * 1400 + i * 210,
+          gain: 0.058 * clampedIntensity,
+          decay: 0.022 + Math.random() * 0.014,
+          pan: panHint + (Math.random() - 0.5) * 0.35,
+          bright: true,
+        });
+      }
+    }, false);
   }
 
   /**
@@ -335,48 +399,50 @@ class NanotechAudioEngine {
     if (nowMs - this.lastHoverAt < 90) return;
     this.lastHoverAt = nowMs;
 
-    if (!this.ensureReady() || !this.ctx) return;
-    const now = this.ctx.currentTime + 0.003;
-    this.scheduleMetallicGrain({
-      startTime: now,
-      baseFreq: 2180 + (Math.random() - 0.5) * 180,
-      gain: 0.055,
-      decay: 0.028,
-      pan: (Math.random() - 0.5) * 0.25,
-      bright: true,
-    });
+    this.withReadyContext((ctx) => {
+      const now = ctx.currentTime + 0.003;
+      this.scheduleMetallicGrain({
+        startTime: now,
+        baseFreq: 2180 + (Math.random() - 0.5) * 180,
+        gain: 0.068,
+        decay: 0.03,
+        pan: (Math.random() - 0.5) * 0.25,
+        bright: true,
+      });
+    }, false);
   }
 
   /**
    * Dual-grain metallic lock ping when focusing a project node (1st click).
    */
   public playNodeFocus(): void {
-    if (!this.ensureReady() || !this.ctx) return;
-    const now = this.ctx.currentTime + 0.005;
+    this.withReadyContext((ctx) => {
+      const now = ctx.currentTime + 0.005;
 
-    this.scheduleMetallicGrain({
-      startTime: now,
-      baseFreq: 1580,
-      gain: 0.1,
-      decay: 0.045,
-      pan: -0.18,
-      bright: true,
-    });
-    this.scheduleMetallicGrain({
-      startTime: now + 0.024,
-      baseFreq: 2340,
-      gain: 0.095,
-      decay: 0.055,
-      pan: 0.18,
-      bright: true,
-    });
-    this.scheduleMetallicGrain({
-      startTime: now + 0.052,
-      baseFreq: 3120,
-      gain: 0.06,
-      decay: 0.04,
-      pan: 0,
-      bright: true,
+      this.scheduleMetallicGrain({
+        startTime: now,
+        baseFreq: 1540,
+        gain: 0.12,
+        decay: 0.048,
+        pan: -0.18,
+        bright: true,
+      });
+      this.scheduleMetallicGrain({
+        startTime: now + 0.024,
+        baseFreq: 2300,
+        gain: 0.11,
+        decay: 0.056,
+        pan: 0.18,
+        bright: true,
+      });
+      this.scheduleMetallicGrain({
+        startTime: now + 0.052,
+        baseFreq: 3080,
+        gain: 0.075,
+        decay: 0.042,
+        pan: 0,
+        bright: true,
+      });
     });
   }
 }

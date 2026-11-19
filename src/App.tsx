@@ -83,21 +83,36 @@ export function App() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // Unlock Web Audio API on first user gesture
+  // Unlock Web Audio API reliably on mobile (touchstart/touchend/click) and desktop
   useEffect(() => {
-    const unlockOnce = () => {
+    const tryUnlock = () => {
       nanotechAudio.unlock();
-      window.removeEventListener('pointerdown', unlockOnce);
-      window.removeEventListener('keydown', unlockOnce);
-      window.removeEventListener('wheel', unlockOnce);
+      if (nanotechAudio.isRunning()) {
+        window.removeEventListener('touchstart', tryUnlock);
+        window.removeEventListener('touchend', tryUnlock);
+        window.removeEventListener('click', tryUnlock);
+        window.removeEventListener('pointerdown', tryUnlock);
+        window.removeEventListener('keydown', tryUnlock);
+      }
     };
-    window.addEventListener('pointerdown', unlockOnce, { passive: true });
-    window.addEventListener('keydown', unlockOnce, { passive: true });
-    window.addEventListener('wheel', unlockOnce, { passive: true });
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        nanotechAudio.unlock();
+      }
+    };
+    window.addEventListener('touchstart', tryUnlock, { passive: true });
+    window.addEventListener('touchend', tryUnlock, { passive: true });
+    window.addEventListener('click', tryUnlock, { passive: true });
+    window.addEventListener('pointerdown', tryUnlock, { passive: true });
+    window.addEventListener('keydown', tryUnlock, { passive: true });
+    document.addEventListener('visibilitychange', onVisibility);
     return () => {
-      window.removeEventListener('pointerdown', unlockOnce);
-      window.removeEventListener('keydown', unlockOnce);
-      window.removeEventListener('wheel', unlockOnce);
+      window.removeEventListener('touchstart', tryUnlock);
+      window.removeEventListener('touchend', tryUnlock);
+      window.removeEventListener('click', tryUnlock);
+      window.removeEventListener('pointerdown', tryUnlock);
+      window.removeEventListener('keydown', tryUnlock);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, []);
 
