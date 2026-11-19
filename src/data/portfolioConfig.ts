@@ -11,6 +11,7 @@ export type { ProjectCategory };
 
 export const GITHUB_USERNAME = 'sameerkhichi';
 export const LINKEDIN_URL = 'https://www.linkedin.com/in/sameer-khichi';
+export const CORE_INITIALS = 'SRK';
 
 /**
  * Repositories hidden from the Neural Project Library (case-insensitive).

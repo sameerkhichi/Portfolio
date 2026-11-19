@@ -15,7 +15,11 @@ import type {
   ProjectItem,
   ViewMode,
 } from './types/portfolio';
-import { computeNeuralLayout, computeSynapseEdges } from './utils/layoutEngine';
+import {
+  computeNeuralLayout,
+  computeSynapseEdges,
+  computeYearRings,
+} from './utils/layoutEngine';
 import { nanotechAudio } from './utils/nanotechAudio';
 import { initHaptics, triggerHaptic } from './utils/haptics';
 
@@ -53,7 +57,8 @@ export function App() {
     zoomByFactor,
   } = useCamera(ABOUT_CORE_ZOOM);
 
-  // Compute recency-ordered radial layout and dendritic connections
+  // Compute year-ring radial layout and dendritic connections
+  const yearRings = useMemo(() => computeYearRings(projects), [projects]);
   const nodes = useMemo(() => computeNeuralLayout(projects), [projects]);
   const edges = useMemo(() => computeSynapseEdges(nodes), [nodes]);
 
@@ -221,6 +226,7 @@ export function App() {
         profile={profile}
         nodes={nodes}
         edges={edges}
+        yearRings={yearRings}
         camera={camera}
         cameraRef={cameraRef}
         velocityRef={velocityRef}

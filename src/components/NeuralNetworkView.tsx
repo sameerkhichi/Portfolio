@@ -2,13 +2,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
-  Maximize2,
+  LocateFixed,
   Minus,
   Plus,
   User,
   Volume2,
   VolumeX,
 } from 'lucide-react';
+import { CORE_INITIALS } from '../data/portfolioConfig';
 import {
   PROJECT_CATEGORIES,
   type CameraState,
@@ -17,6 +18,7 @@ import {
   type ProjectCategory,
   type SynapseEdge,
   type ViewMode,
+  type YearRing,
 } from '../types/portfolio';
 import { NeuralCanvas } from './NeuralCanvas';
 import { nanotechAudio } from '../utils/nanotechAudio';
@@ -26,6 +28,7 @@ interface NeuralNetworkViewProps {
   profile: ProfileData;
   nodes: PositionedProjectNode[];
   edges: SynapseEdge[];
+  yearRings: YearRing[];
   camera: CameraState;
   cameraRef: React.MutableRefObject<CameraState>;
   velocityRef: React.MutableRefObject<number>;
@@ -50,6 +53,7 @@ export function NeuralNetworkView({
   profile,
   nodes,
   edges,
+  yearRings,
   camera,
   cameraRef,
   velocityRef,
@@ -97,13 +101,7 @@ export function NeuralNetworkView({
     strip.scrollBy({ left: direction * 180, behavior: 'smooth' });
   }, []);
 
-  const initials = useMemo(() => {
-    const parts = profile.name.trim().split(/\s+/);
-    if (parts.length >= 2) {
-      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-    }
-    return profile.name.slice(0, 2).toUpperCase();
-  }, [profile.name]);
+  const initials = CORE_INITIALS;
 
   const visibleCategories = useMemo(
     () =>
@@ -146,6 +144,7 @@ export function NeuralNetworkView({
       <NeuralCanvas
         nodes={nodes}
         edges={edges}
+        yearRings={yearRings}
         cameraRef={cameraRef}
         velocityRef={velocityRef}
         pointerScreenRef={pointerScreenRef}
@@ -380,10 +379,10 @@ export function NeuralNetworkView({
               type="button"
               className="icon-control-btn"
               onClick={onFitAll}
-              aria-label="Fit entire neural network in view"
-              title="Fit All Nodes"
+              aria-label="Recenter neural network view"
+              title="Recenter View"
             >
-              <Maximize2 size={15} />
+              <LocateFixed size={16} />
             </button>
           </div>
         </div>

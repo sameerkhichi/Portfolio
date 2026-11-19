@@ -4,6 +4,7 @@ import {
   CORE_NODE_ID,
   computeNeuralLayout,
   computeSynapseEdges,
+  computeYearRings,
 } from './layoutEngine';
 
 function makeProject(id: string, date: string, techStack = ['TypeScript']): ProjectItem {
@@ -87,6 +88,31 @@ describe('computeNeuralLayout', () => {
     for (let i = 1; i < layout.length; i++) {
       expect(layout[i].radius).toBeGreaterThanOrEqual(layout[i - 1].radius);
     }
+  });
+  it('creates one concentric ring per calendar year and encapsulates every project inside its year band by month', () => {
+    const projects = [
+      makeProject('dec-2026', '2026-12-15T00:00:00Z'),
+      makeProject('feb-2026', '2026-02-10T00:00:00Z'),
+      makeProject('jul-2025', '2025-07-01T00:00:00Z'),
+      makeProject('nov-2024', '2024-11-20T00:00:00Z'),
+    ];
+
+    const rings = computeYearRings(projects);
+    expect(rings.map((r) => r.year)).toEqual([2026, 2025, 2024]);
+
+    const layout = computeNeuralLayout(projects);
+    const ringMap = new Map(rings.map((r) => [r.year, r]));
+
+    for (const node of layout) {
+      const year = new Date(node.project.date).getUTCFullYear();
+      const ring = ringMap.get(year)!;
+      expect(node.radius).toBeGreaterThan(ring.innerRadius);
+      expect(node.radius).toBeLessThan(ring.outerRadius);
+    }
+
+    const dec2026 = layout.find((n) => n.project.id === 'dec-2026')!;
+    const feb2026 = layout.find((n) => n.project.id === 'feb-2026')!;
+    expect(dec2026.radius).toBeLessThan(feb2026.radius);
   });
 });
 

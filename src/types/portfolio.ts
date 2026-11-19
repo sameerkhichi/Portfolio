@@ -62,6 +62,12 @@ export type ProjectOverride = Partial<
   hidden?: boolean;
 };
 
+export interface YearRing {
+  year: number;
+  innerRadius: number;
+  outerRadius: number;
+}
+
 export interface PositionedProjectNode {
   project: ProjectItem;
   x: number;

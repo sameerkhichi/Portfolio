@@ -4,12 +4,14 @@ import type {
   PositionedProjectNode,
   SynapseEdge,
   ViewMode,
+  YearRing,
 } from '../types/portfolio';
 import { nanotechAudio } from '../utils/nanotechAudio';
 
 interface NeuralCanvasProps {
   nodes: PositionedProjectNode[];
   edges: SynapseEdge[];
+  yearRings: YearRing[];
   cameraRef: React.MutableRefObject<CameraState>;
   velocityRef: React.MutableRefObject<number>;
   pointerScreenRef: React.MutableRefObject<{ x: number; y: number; active: boolean }>;
@@ -88,6 +90,7 @@ function strokePartialQuadBezier(
 export function NeuralCanvas({
   nodes,
   edges,
+  yearRings,
   cameraRef,
   velocityRef,
   pointerScreenRef,
@@ -108,6 +111,7 @@ export function NeuralCanvas({
   const propsRef = useRef({
     nodes,
     edges,
+    yearRings,
     viewMode,
     selectedNodeId,
     hoveredNodeId,
@@ -117,6 +121,7 @@ export function NeuralCanvas({
   propsRef.current = {
     nodes,
     edges,
+    yearRings,
     viewMode,
     selectedNodeId,
     hoveredNodeId,
@@ -219,6 +224,7 @@ export function NeuralCanvas({
       const {
         nodes: currentNodes,
         edges: currentEdges,
+        yearRings: currentYearRings,
         viewMode: mode,
         selectedNodeId: selectedId,
         hoveredNodeId: hoveredId,
@@ -262,28 +268,23 @@ export function NeuralCanvas({
       ctx.scale(cam.zoom, cam.zoom);
       ctx.translate(-cam.x, -cam.y);
 
-      // 1. Concentric recency orbit rings around Center Core (0, 0)
-      const maxNodeR = currentNodes.reduce((m, n) => Math.max(m, n.radius), 460);
-      const orbitRings = [
-        { r: 195, label: 'RECENT' },
-        { r: Math.round(195 + (maxNodeR - 195) * 0.5), label: 'MID-TIMELINE' },
-        { r: Math.round(maxNodeR + 24), label: 'EARLIER ARCHIVE' },
-      ];
-
+      // 1. Concentric Year Rings around Center Core (0, 0) — grows by 1 ring per year
       ctx.save();
-      for (const ring of orbitRings) {
+      for (const ring of currentYearRings) {
         ctx.beginPath();
-        ctx.arc(0, 0, ring.r, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(0, 240, 255, 0.08)';
+        ctx.arc(0, 0, ring.outerRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.11)';
         ctx.lineWidth = 1 / cam.zoom;
         ctx.setLineDash([5 / cam.zoom, 9 / cam.zoom]);
         ctx.stroke();
 
-        if (mode !== 'ABOUT_FULLSCREEN' && cam.zoom > 0.45) {
+        if (mode !== 'ABOUT_FULLSCREEN' && cam.zoom > 0.35) {
           ctx.setLineDash([]);
-          ctx.fillStyle = 'rgba(0, 240, 255, 0.24)';
-          ctx.font = `500 ${Math.max(8, 10 / cam.zoom)}px "JetBrains Mono", monospace`;
-          ctx.fillText(ring.label, 8, -ring.r + 12 / cam.zoom);
+          ctx.fillStyle = 'rgba(0, 240, 255, 0.42)';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.font = `500 ${Math.max(9, 11 / cam.zoom)}px "JetBrains Mono", monospace`;
+          ctx.fillText(String(ring.year), 0, -ring.outerRadius + 8 / cam.zoom);
         }
       }
       ctx.restore();

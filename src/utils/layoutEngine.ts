@@ -2,38 +2,104 @@ import type {
   PositionedProjectNode,
   ProjectItem,
   SynapseEdge,
+  YearRing,
 } from '../types/portfolio';
 
 export const CORE_NODE_ID = 'about-me-core';
-export const MIN_ORBIT_RADIUS = 195;
-export const MAX_ORBIT_RADIUS = 560;
+export const BASE_INNER_RADIUS = 135;
+export const YEAR_RING_STEP = 175;
+const BAND_PADDING = 32;
 const GOLDEN_ANGLE_RAD = Math.PI * (3 - Math.sqrt(5)); // ~137.508 deg
 
+function getProjectDateParts(iso: string): {
+  timestamp: number;
+  year: number;
+  yearProgressFromEnd: number; // 0 = Dec 31 (newest in year), 1 = Jan 1 (oldest in year)
+} {
+  const parsed = Date.parse(iso);
+  const date = Number.isNaN(parsed) ? new Date() : new Date(parsed);
+  const year = date.getUTCFullYear();
+  const startOfYear = Date.UTC(year, 0, 1, 0, 0, 0);
+  const endOfYear = Date.UTC(year + 1, 0, 1, 0, 0, 0);
+  const span = Math.max(1, endOfYear - startOfYear);
+  const fractionFromStart = Math.max(
+    0,
+    Math.min(1, (date.getTime() - startOfYear) / span)
+  );
+  return {
+    timestamp: date.getTime(),
+    year,
+    yearProgressFromEnd: 1 - fractionFromStart,
+  };
+}
+
 /**
- * Deterministic radial neural network layout engine.
+ * Generates one concentric ring per calendar year spanning from the most recent
+ * project year outward to the oldest project year. Grows automatically by one
+ * ring whenever a project from a new year is added.
+ */
+export function computeYearRings(
+  projects: ProjectItem[],
+  options?: {
+    baseInnerRadius?: number;
+    yearRingStep?: number;
+  }
+): YearRing[] {
+  if (projects.length === 0) return [];
+
+  const baseInner = options?.baseInnerRadius ?? BASE_INNER_RADIUS;
+  const step = options?.yearRingStep ?? YEAR_RING_STEP;
+
+  const years = projects.map((p) => getProjectDateParts(p.date).year);
+  const newestYear = Math.max(...years);
+  const oldestYear = Math.min(...years);
+
+  const rings: YearRing[] = [];
+  for (let y = newestYear; y >= oldestYear; y--) {
+    const idx = newestYear - y;
+    rings.push({
+      year: y,
+      innerRadius: baseInner + idx * step,
+      outerRadius: baseInner + (idx + 1) * step,
+    });
+  }
+  return rings;
+}
+
+/**
+ * Deterministic year-ring radial neural network layout engine.
  *
  * Guarantees:
- * 1. More recent projects ALWAYS sit closer to the center (0, 0) than older projects.
- * 2. Nodes are evenly distributed around the center via a golden-angle spiral.
- * 3. Angular-only collision relaxation eliminates visual overlap without breaking
- *    the recency-to-radius invariant.
+ * 1. Each calendar year occupies its own concentric ring band (newest year innermost).
+ * 2. Within each year's ring, projects are positioned radially by month/date
+ *    (later in the year = closer to center, earlier in the year = closer to outer ring).
+ * 3. More recent projects ALWAYS sit closer to the center (0, 0) than older projects.
+ * 4. Angular-only collision relaxation eliminates visual overlap without ever
+ *    pushing a node outside its year ring.
  */
 export function computeNeuralLayout(
   projects: ProjectItem[],
   options?: {
-    minRadius?: number;
-    maxRadius?: number;
+    baseInnerRadius?: number;
+    yearRingStep?: number;
     minNodeSpacing?: number;
   }
 ): PositionedProjectNode[] {
   if (projects.length === 0) return [];
 
-  const minRadius = options?.minRadius ?? MIN_ORBIT_RADIUS;
-  const adaptiveMax = Math.max(
-    options?.maxRadius ?? MAX_ORBIT_RADIUS,
-    minRadius + projects.length * 30
-  );
-  const minNodeSpacing = options?.minNodeSpacing ?? 128;
+  const baseInner = options?.baseInnerRadius ?? BASE_INNER_RADIUS;
+  const step = options?.yearRingStep ?? YEAR_RING_STEP;
+  const minNodeSpacing = options?.minNodeSpacing ?? 124;
+
+  const yearRings = computeYearRings(projects, {
+    baseInnerRadius: baseInner,
+    yearRingStep: step,
+  });
+  const ringByYear = new Map(yearRings.map((r) => [r.year, r]));
+  const totalOuterSpan =
+    yearRings.length > 0
+      ? yearRings[yearRings.length - 1].outerRadius - baseInner
+      : step;
 
   // Sort strictly newest -> oldest
   const sorted = [...projects].sort((a, b) => {
@@ -43,27 +109,23 @@ export function computeNeuralLayout(
     return a.title.localeCompare(b.title);
   });
 
-  const timestamps = sorted.map((p) => Date.parse(p.date) || 0);
-  const newestTs = Math.max(...timestamps);
-  const oldestTs = Math.min(...timestamps);
-  const timeSpan = Math.max(1, newestTs - oldestTs);
-
-  const count = sorted.length;
   const rawNodes: PositionedProjectNode[] = sorted.map((project, index) => {
-    const ts = timestamps[index];
-    const rankProgress = count === 1 ? 0 : index / (count - 1); // 0 = newest, 1 = oldest
-    const timeProgress =
-      newestTs === oldestTs ? rankProgress : (newestTs - ts) / timeSpan;
+    const { year, yearProgressFromEnd } = getProjectDateParts(project.date);
+    const ring = ringByYear.get(year) ?? yearRings[0];
+    const usableSpan = Math.max(20, ring.outerRadius - ring.innerRadius - BAND_PADDING * 2);
 
-    // Blend rank (55%) + real chronological time gap (45%) so closely-dated projects
-    // stay nicely spaced while genuinely older projects sit distinctly further out.
-    const blendedDepth = Math.min(1, Math.max(0, rankProgress * 0.55 + timeProgress * 0.45));
-    const recencyScore = 1 - blendedDepth;
-    const radius = minRadius + blendedDepth * (adaptiveMax - minRadius);
+    // Place radially inside [ring.innerRadius + pad, ring.outerRadius - pad] based on month/date in year
+    const radius = ring.innerRadius + BAND_PADDING + yearProgressFromEnd * usableSpan;
 
-    // Offset initial angle slightly so innermost node sits aesthetically at upper-right
+    const normalizedDepth = Math.min(
+      1,
+      Math.max(0, (radius - baseInner) / Math.max(1, totalOuterSpan))
+    );
+    const recencyScore = 1 - normalizedDepth;
+
+    // Golden-angle distribution around the ring for organic spacing
     const angle = index * GOLDEN_ANGLE_RAD - Math.PI / 5;
-    const nodeSize = Math.round(21 + recencyScore * 10);
+    const nodeSize = Math.round(21 + recencyScore * 9);
 
     return {
       project,
@@ -76,15 +138,8 @@ export function computeNeuralLayout(
     };
   });
 
-  // Enforce monotonic non-decreasing radius strictly across sorted order
-  for (let i = 1; i < rawNodes.length; i++) {
-    if (rawNodes[i].radius < rawNodes[i - 1].radius) {
-      rawNodes[i].radius = rawNodes[i - 1].radius;
-    }
-  }
-
-  // Angular-only collision relaxation (preserves exact radius!)
-  const iterations = 28;
+  // Angular-only collision relaxation (preserves exact year-ring radius!)
+  const iterations = 32;
   for (let iter = 0; iter < iterations; iter++) {
     let moved = false;
     for (let i = 0; i < rawNodes.length; i++) {
@@ -98,7 +153,6 @@ export function computeNeuralLayout(
         if (dist < minNodeSpacing) {
           moved = true;
           const overlap = (minNodeSpacing - dist) * 0.55;
-          // Push both nodes tangentially along their respective orbits
           const angleDiff = Math.atan2(
             Math.sin(b.angle - a.angle),
             Math.cos(b.angle - a.angle)
@@ -126,7 +180,7 @@ export function computeNeuralLayout(
 /**
  * Generates primary dendrites connecting every project node to the center About Me
  * core, plus subtle secondary associative synapses between nearby projects sharing
- * a technology tag.
+ * a category or tech tag.
  */
 export function computeSynapseEdges(nodes: PositionedProjectNode[]): SynapseEdge[] {
   const edges: SynapseEdge[] = [];
@@ -136,7 +190,6 @@ export function computeSynapseEdges(nodes: PositionedProjectNode[]): SynapseEdge
     const node = nodes[i];
     const midX = node.x * 0.5;
     const midY = node.y * 0.5;
-    // Gentle organic curve perpendicular to the vector
     const perpX = -node.y / Math.max(1, node.radius);
     const perpY = node.x / Math.max(1, node.radius);
     const bend = (i % 2 === 0 ? 1 : -1) * Math.min(48, node.radius * 0.14);
