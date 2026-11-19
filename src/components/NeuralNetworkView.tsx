@@ -172,8 +172,8 @@ export function NeuralNetworkView({
           className="core-node-btn"
           style={{
             transform: `translate3d(${corePos.x}px, ${corePos.y}px, 0) scale(${Math.max(
-              0.72,
-              Math.min(1.22, camera.zoom)
+              0.55,
+              Math.min(1.45, camera.zoom)
             )})`,
             pointerEvents: showInteractiveGraph ? 'auto' : 'none',
           }}
@@ -199,7 +199,7 @@ export function NeuralNetworkView({
             !effectiveFilter ||
             node.project.categories.includes(effectiveFilter);
 
-          const scaleFactor = Math.max(0.74, Math.min(1.22, camera.zoom * 1.05));
+          const scaleFactor = Math.max(0.55, Math.min(1.45, camera.zoom * 1.05));
           const diameter = Math.round(node.nodeSize * 2);
 
           return (

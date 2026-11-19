@@ -50,41 +50,48 @@ export function usePinchGesture({
       onAboutPinchProgress?.(0);
     };
 
+    const normalizeWheelDeltaY = (e: WheelEvent): number => {
+      if (e.deltaMode === 1) return e.deltaY * 38; // DOM_DELTA_LINE (Firefox / Windows mouse wheel)
+      if (e.deltaMode === 2) return e.deltaY * 420; // DOM_DELTA_PAGE
+      return e.deltaY; // DOM_DELTA_PIXEL
+    };
+
     const handleWheel = (e: WheelEvent) => {
+      const normalizedDeltaY = normalizeWheelDeltaY(e);
+
       // Allow normal vertical scroll inside full-screen catalog unless pinching (ctrlKey)
       if (viewMode === 'PROJECT_FULLSCREEN') {
         if (e.ctrlKey) {
           e.preventDefault();
-          if (e.deltaY > 18) {
+          if (normalizedDeltaY > 18) {
             onPinchOutFromCatalog();
           }
         }
         return;
       }
 
-      // In About Me landing: trackpad pinch-out (ctrlKey + positive deltaY) zooms out to Project Library
+      // In About Me landing: trackpad pinch-out OR mouse wheel scroll-down zooms out to Project Library
       if (viewMode === 'ABOUT_FULLSCREEN') {
-        if (e.ctrlKey) {
-          e.preventDefault();
-          if (e.deltaY > 0) {
-            wheelPinchAccumRef.current += e.deltaY;
-            const progress = Math.min(1, wheelPinchAccumRef.current / 90);
-            onAboutPinchProgress?.(progress);
+        e.preventDefault();
+        if (normalizedDeltaY > 0) {
+          const threshold = e.ctrlKey ? 82 : 160;
+          wheelPinchAccumRef.current += normalizedDeltaY;
+          const progress = Math.min(1, wheelPinchAccumRef.current / threshold);
+          onAboutPinchProgress?.(progress);
 
-            if (wheelPinchAccumRef.current >= 82) {
-              resetAboutPinchVisual();
-              onPinchOutFromAbout();
-              return;
-            }
-
-            if (wheelResetTimerRef.current) {
-              window.clearTimeout(wheelResetTimerRef.current);
-            }
-            wheelResetTimerRef.current = window.setTimeout(
-              resetAboutPinchVisual,
-              240
-            );
+          if (wheelPinchAccumRef.current >= threshold) {
+            resetAboutPinchVisual();
+            onPinchOutFromAbout();
+            return;
           }
+
+          if (wheelResetTimerRef.current) {
+            window.clearTimeout(wheelResetTimerRef.current);
+          }
+          wheelResetTimerRef.current = window.setTimeout(
+            resetAboutPinchVisual,
+            280
+          );
         }
         return;
       }
@@ -95,7 +102,9 @@ export function usePinchGesture({
       if (filterStrip && !e.ctrlKey) {
         e.preventDefault();
         const delta =
-          Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+          Math.abs(e.deltaX) > Math.abs(normalizedDeltaY)
+            ? e.deltaX
+            : normalizedDeltaY;
         filterStrip.scrollLeft += delta;
         return;
       }
@@ -104,10 +113,11 @@ export function usePinchGesture({
         return;
       }
 
-      // Zoom neural network cleanly around cursor
+      // Zoom neural network cleanly around cursor (supports trackpad pinch AND mouse scroll wheels)
+      if (Math.abs(normalizedDeltaY) < 0.01) return;
       e.preventDefault();
-      const intensity = e.ctrlKey ? 0.011 : 0.0018;
-      const clampedDelta = Math.max(-120, Math.min(120, e.deltaY));
+      const intensity = e.ctrlKey ? 0.011 : 0.0026;
+      const clampedDelta = Math.max(-220, Math.min(220, normalizedDeltaY));
       const factor = Math.exp(-clampedDelta * intensity);
       onZoom(factor, e.clientX, e.clientY);
     };
@@ -218,7 +228,7 @@ export function usePinchGesture({
       }
     };
 
-    el.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('wheel', handleWheel, { passive: false });
     window.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUpOrCancel);
@@ -228,7 +238,7 @@ export function usePinchGesture({
       if (wheelResetTimerRef.current) {
         window.clearTimeout(wheelResetTimerRef.current);
       }
-      el.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUpOrCancel);
