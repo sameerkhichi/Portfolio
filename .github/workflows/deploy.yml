@@ -31,10 +31,14 @@ jobs:
         run: npm ci
 
       - name: Sync GitHub metadata (optional private repo support)
-        if: ${{ secrets.PORTFOLIO_GH_TOKEN != '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.PORTFOLIO_GH_TOKEN }}
-        run: npm run sync:github
+        run: |
+          if [ -n "$GITHUB_TOKEN" ]; then
+            npm run sync:github
+          else
+            echo "Skipping authenticated GitHub sync (PORTFOLIO_GH_TOKEN not set)."
+          fi
 
       - name: Build production bundle
         run: npm run build
