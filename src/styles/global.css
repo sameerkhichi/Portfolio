@@ -650,11 +650,23 @@ button {
 .about-card {
   position: relative;
   width: min(640px, 100%);
-  padding: 44px 40px;
-  border-radius: 26px;
-  background: linear-gradient(155deg, rgba(10, 22, 42, 0.88) 0%, rgba(5, 11, 22, 0.94) 100%);
-  border: 1px solid var(--aqua-border);
-  box-shadow: var(--panel-shadow), 0 0 80px rgba(0, 240, 255, 0.12);
+  padding: 46px 42px;
+  border-radius: 42px;
+  background: linear-gradient(
+    145deg,
+    rgba(18, 34, 58, 0.44) 0%,
+    rgba(8, 16, 30, 0.56) 52%,
+    rgba(4, 10, 20, 0.68) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  backdrop-filter: blur(30px) saturate(190%) brightness(1.06);
+  -webkit-backdrop-filter: blur(30px) saturate(190%) brightness(1.06);
+  box-shadow:
+    0 32px 84px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+    inset 1px 0 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 42px rgba(0, 240, 255, 0.05);
   overflow: hidden;
   text-align: center;
   user-select: text;
@@ -664,19 +676,26 @@ button {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0, 240, 255, 0.08) 0%, transparent 24%);
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse 88% 46% at 24% 0%,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(165, 243, 252, 0.04) 44%,
+    transparent 74%
+  );
   pointer-events: none;
 }
 
 .about-card::after {
   content: '';
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 90px;
-  background: linear-gradient(180deg, transparent, rgba(0, 240, 255, 0.05), transparent);
-  animation: scanline 7s linear infinite;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse 65% 38% at 82% 100%,
+    rgba(0, 240, 255, 0.07) 0%,
+    transparent 70%
+  );
   pointer-events: none;
 }
 
@@ -795,15 +814,41 @@ button {
   z-index: 25;
   display: flex;
   flex-direction: column;
-  padding: 24px;
-  border-radius: var(--radius-lg);
-  background: var(--bg-glass-strong);
-  border: 1px solid var(--aqua-border-strong);
-  backdrop-filter: blur(20px);
-  box-shadow: var(--panel-shadow);
+  padding: 26px;
+  border-radius: 34px;
+  background: linear-gradient(
+    148deg,
+    rgba(18, 34, 58, 0.48) 0%,
+    rgba(8, 16, 30, 0.62) 55%,
+    rgba(4, 10, 20, 0.74) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(32px) saturate(195%) brightness(1.06);
+  -webkit-backdrop-filter: blur(32px) saturate(195%) brightness(1.06);
+  box-shadow:
+    0 28px 72px rgba(0, 0, 0, 0.64),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    inset 1px 0 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 36px rgba(0, 240, 255, 0.04);
   animation: panelSlideRight 0.34s var(--ease-tech) forwards;
   overflow-y: auto;
+  overflow-x: hidden;
   user-select: text;
+}
+
+.overview-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse 90% 34% at 22% 0%,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(165, 243, 252, 0.03) 48%,
+    transparent 76%
+  );
+  pointer-events: none;
 }
 
 .overview-header {
@@ -890,7 +935,7 @@ button {
   flex-direction: column;
   gap: 10px;
   padding-top: 16px;
-  border-top: 1px solid rgba(0, 240, 255, 0.14);
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
 }
 
 .expand-catalog-btn {
@@ -951,8 +996,9 @@ button {
   position: fixed;
   inset: 0;
   z-index: 40;
-  background: rgba(3, 7, 14, 0.92);
-  backdrop-filter: blur(18px);
+  background: rgba(3, 7, 14, 0.78);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
   overflow-y: auto;
   padding: 24px;
   animation: catalogZoomIn 0.36s var(--ease-tech) forwards;
@@ -991,11 +1037,21 @@ button {
 }
 
 .catalog-gallery-card {
-  border-radius: var(--radius-lg);
+  position: relative;
+  border-radius: 32px;
   overflow: hidden;
-  border: 1px solid var(--aqua-border);
-  background: linear-gradient(145deg, rgba(10, 24, 46, 0.9), rgba(4, 10, 20, 0.95));
-  box-shadow: var(--panel-shadow);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: linear-gradient(
+    145deg,
+    rgba(18, 34, 58, 0.44) 0%,
+    rgba(7, 15, 28, 0.62) 100%
+  );
+  backdrop-filter: blur(28px) saturate(185%) brightness(1.05);
+  -webkit-backdrop-filter: blur(28px) saturate(185%) brightness(1.05);
+  box-shadow:
+    0 28px 72px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .catalog-main-image-wrap {
@@ -1097,13 +1153,41 @@ button {
 }
 
 .catalog-details-card {
-  padding: 28px;
-  border-radius: var(--radius-lg);
-  background: var(--bg-glass);
-  border: 1px solid var(--aqua-border);
+  position: relative;
+  padding: 30px;
+  border-radius: 32px;
+  background: linear-gradient(
+    148deg,
+    rgba(18, 34, 58, 0.44) 0%,
+    rgba(8, 16, 30, 0.58) 54%,
+    rgba(4, 10, 20, 0.7) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  backdrop-filter: blur(28px) saturate(190%) brightness(1.06);
+  -webkit-backdrop-filter: blur(28px) saturate(190%) brightness(1.06);
+  box-shadow:
+    0 28px 72px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    inset 1px 0 0 rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
   gap: 18px;
+  overflow: hidden;
+}
+
+.catalog-details-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse 86% 36% at 20% 0%,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(165, 243, 252, 0.03) 45%,
+    transparent 74%
+  );
+  pointer-events: none;
 }
 
 .catalog-title {
@@ -1159,11 +1243,18 @@ button {
     bottom: 14px;
     width: auto;
     max-height: 54vh;
+    border-radius: 30px;
     animation: panelSlideUp 0.34s var(--ease-tech) forwards;
   }
 
   .about-card {
-    padding: 32px 24px;
+    padding: 34px 24px;
+    border-radius: 34px;
+  }
+
+  .catalog-gallery-card,
+  .catalog-details-card {
+    border-radius: 28px;
   }
 
   .network-hud {

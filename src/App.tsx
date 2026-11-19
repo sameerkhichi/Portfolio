@@ -17,6 +17,7 @@ import type {
 } from './types/portfolio';
 import { computeNeuralLayout, computeSynapseEdges } from './utils/layoutEngine';
 import { nanotechAudio } from './utils/nanotechAudio';
+import { triggerHaptic } from './utils/haptics';
 
 export function App() {
   const initialSeed = useMemo(() => getSeededPortfolioData(), []);
@@ -117,6 +118,7 @@ export function App() {
   }, []);
 
   const openProjectLibrary = useCallback(() => {
+    triggerHaptic('assemble');
     nanotechAudio.unlock();
     nanotechAudio.playAssembleCascade(Math.min(18, Math.max(10, nodes.length + 5)));
     setSelectedNodeId(null);
@@ -127,6 +129,7 @@ export function App() {
   }, [fitNetwork, nodes, viewport]);
 
   const openAboutMe = useCallback(() => {
+    triggerHaptic('expand');
     nanotechAudio.unlock();
     nanotechAudio.playZoomTransition('in');
     setSelectedNodeId(null);
@@ -136,6 +139,7 @@ export function App() {
 
   const handleSelectNode = useCallback(
     (node: PositionedProjectNode) => {
+      triggerHaptic('medium');
       nanotechAudio.unlock();
       nanotechAudio.playNodeFocus();
       setSelectedNodeId(node.project.id);
@@ -146,6 +150,7 @@ export function App() {
   );
 
   const handleExpandNode = useCallback((node: PositionedProjectNode) => {
+    triggerHaptic('expand');
     nanotechAudio.unlock();
     nanotechAudio.playZoomTransition('in');
     setSelectedNodeId(node.project.id);
@@ -153,12 +158,14 @@ export function App() {
   }, []);
 
   const handleBackFromCatalog = useCallback(() => {
+    triggerHaptic('dismiss');
     nanotechAudio.unlock();
     nanotechAudio.playZoomTransition('out');
     setViewMode(selectedNodeId ? 'NODE_PREVIEW' : 'NETWORK');
   }, [selectedNodeId]);
 
   const handleDeselect = useCallback(() => {
+    triggerHaptic('dismiss');
     nanotechAudio.playZoomTransition('out');
     setSelectedNodeId(null);
     setViewMode('NETWORK');
@@ -166,6 +173,7 @@ export function App() {
   }, [fitNetwork, nodes, viewport]);
 
   const handleToggleMute = useCallback(() => {
+    triggerHaptic('light');
     const nextMuted = nanotechAudio.toggleMute();
     setIsMuted(nextMuted);
   }, []);

@@ -2,7 +2,6 @@ import {
   Github,
   Linkedin,
   Network,
-  Sparkles,
   Volume2,
   VolumeX,
 } from 'lucide-react';
@@ -61,11 +60,6 @@ export function AboutOverlay({
       </div>
 
       <div className="about-card">
-        <div className="about-badge">
-          <Sparkles size={13} />
-          <span>Neural Portfolio // Online</span>
-        </div>
-
         <h1 className="about-name">{profile.name}</h1>
 
         <p className="about-bio">{profile.bio}</p>
@@ -118,7 +112,7 @@ export function AboutOverlay({
         </button>
 
         <div className="pinch-hint">
-          <span>Click Project Library or pinch out to zoom into neural map</span>
+          <span>Click Project Library or pinch out to explore projects</span>
         </div>
       </div>
     </section>

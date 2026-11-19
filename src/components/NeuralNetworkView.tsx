@@ -20,6 +20,7 @@ import {
 } from '../types/portfolio';
 import { NeuralCanvas } from './NeuralCanvas';
 import { nanotechAudio } from '../utils/nanotechAudio';
+import { triggerHaptic } from '../utils/haptics';
 
 interface NeuralNetworkViewProps {
   profile: ProfileData;
@@ -263,15 +264,6 @@ export function NeuralNetworkView({
             <div className="hud-pill">
               <span className="hud-status-dot" />
               <strong>{profile.name}</strong>
-              <span
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.7rem',
-                  color: 'var(--aqua-glow)',
-                }}
-              >
-                // {nodes.length} NODES
-              </span>
             </div>
 
             <button
@@ -309,6 +301,7 @@ export function NeuralNetworkView({
                     type="button"
                     className={`filter-chip ${effectiveFilter === null ? 'is-active' : ''}`}
                     onClick={() => {
+                      triggerHaptic('light');
                       setActiveFilter(null);
                       nanotechAudio.playNodeHover();
                     }}
@@ -321,6 +314,7 @@ export function NeuralNetworkView({
                       type="button"
                       className={`filter-chip ${effectiveFilter === category ? 'is-active' : ''}`}
                       onClick={() => {
+                        triggerHaptic('light');
                         setActiveFilter(effectiveFilter === category ? null : category);
                         nanotechAudio.playNodeHover();
                       }}
