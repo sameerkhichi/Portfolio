@@ -1,0 +1,43 @@
+:root {
+  /* Deep obsidian & space navy canvas palette */
+  --bg-void: #04080f;
+  --bg-deep: #060d18;
+  --bg-surface: #0a1526;
+  --bg-surface-elevated: #0f1e35;
+  --bg-glass: rgba(7, 15, 28, 0.8);
+  --bg-glass-strong: rgba(5, 11, 21, 0.92);
+
+  /* Bioluminescent aqua tech accents */
+  --aqua-core: #00f0ff;
+  --aqua-bright: #5ff6ff;
+  --aqua-glow: #22d3ee;
+  --aqua-mid: #0891b2;
+  --aqua-deep: #0e7490;
+  --aqua-dim: rgba(0, 240, 255, 0.14);
+  --aqua-border: rgba(0, 240, 255, 0.28);
+  --aqua-border-strong: rgba(0, 240, 255, 0.62);
+
+  /* Typography colors */
+  --text-primary: #eff8ff;
+  --text-secondary: #9bb4cc;
+  --text-muted: #5c7591;
+
+  /* Shadows & glows */
+  --glow-sm: 0 0 12px rgba(0, 240, 255, 0.25);
+  --glow-md: 0 0 24px rgba(0, 240, 255, 0.32), 0 0 60px rgba(0, 240, 255, 0.12);
+  --glow-lg: 0 0 40px rgba(0, 240, 255, 0.42), 0 0 90px rgba(14, 165, 233, 0.18);
+  --panel-shadow: 0 24px 64px rgba(0, 0, 0, 0.65), 0 0 1px rgba(0, 240, 255, 0.5);
+
+  /* Fonts */
+  --font-display: 'Space Grotesk', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Radii & layout */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 9999px;
+
+  /* Transitions */
+  --ease-tech: cubic-bezier(0.22, 1, 0.36, 1);
+}

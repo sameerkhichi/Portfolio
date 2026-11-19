@@ -1,0 +1,570 @@
+import { useEffect, useRef } from 'react';
+import type {
+  CameraState,
+  PositionedProjectNode,
+  SynapseEdge,
+  ViewMode,
+} from '../types/portfolio';
+import { nanotechAudio } from '../utils/nanotechAudio';
+
+interface NeuralCanvasProps {
+  nodes: PositionedProjectNode[];
+  edges: SynapseEdge[];
+  cameraRef: React.MutableRefObject<CameraState>;
+  velocityRef: React.MutableRefObject<number>;
+  pointerScreenRef: React.MutableRefObject<{ x: number; y: number; active: boolean }>;
+  viewMode: ViewMode;
+  generationEpoch: number;
+  selectedNodeId: string | null;
+  hoveredNodeId: string | null;
+  activeFilter: string | null;
+  onNodeRevealChange?: (revealedIds: Set<string>) => void;
+}
+
+interface AmbientParticle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  alpha: number;
+}
+
+interface EdgeAnimState {
+  progress: number;
+  delayMs: number;
+  sparkBurst: number;
+  wasVisible: boolean;
+}
+
+function evalQuadBezier(
+  x0: number,
+  y0: number,
+  cx: number,
+  cy: number,
+  x1: number,
+  y1: number,
+  t: number
+): { x: number; y: number } {
+  const mt = 1 - t;
+  return {
+    x: mt * mt * x0 + 2 * mt * t * cx + t * t * x1,
+    y: mt * mt * y0 + 2 * mt * t * cy + t * t * y1,
+  };
+}
+
+/**
+ * Draws a sub-segment [0, t] of a quadratic Bezier curve via de Casteljau subdivision.
+ */
+function strokePartialQuadBezier(
+  ctx: CanvasRenderingContext2D,
+  x0: number,
+  y0: number,
+  cx: number,
+  cy: number,
+  x1: number,
+  y1: number,
+  t: number
+): { tipX: number; tipY: number } {
+  const clamped = Math.max(0, Math.min(1, t));
+  const q0x = x0 + (cx - x0) * clamped;
+  const q0y = y0 + (cy - y0) * clamped;
+  const q1x = cx + (x1 - cx) * clamped;
+  const q1y = cy + (y1 - cy) * clamped;
+  const tipX = q0x + (q1x - q0x) * clamped;
+  const tipY = q0y + (q1y - q0y) * clamped;
+
+  ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.quadraticCurveTo(q0x, q0y, tipX, tipY);
+  ctx.stroke();
+
+  return { tipX, tipY };
+}
+
+export function NeuralCanvas({
+  nodes,
+  edges,
+  cameraRef,
+  velocityRef,
+  pointerScreenRef,
+  viewMode,
+  generationEpoch,
+  selectedNodeId,
+  hoveredNodeId,
+  activeFilter,
+  onNodeRevealChange,
+}: NeuralCanvasProps) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const particlesRef = useRef<AmbientParticle[]>([]);
+  const edgeStatesRef = useRef<Map<string, EdgeAnimState>>(new Map());
+  const generationStartRef = useRef<number>(performance.now());
+  const revealedSetRef = useRef<Set<string>>(new Set());
+
+  // Keep latest props accessible inside RAF loop without restarting canvas
+  const propsRef = useRef({
+    nodes,
+    edges,
+    viewMode,
+    selectedNodeId,
+    hoveredNodeId,
+    activeFilter,
+    onNodeRevealChange,
+  });
+  propsRef.current = {
+    nodes,
+    edges,
+    viewMode,
+    selectedNodeId,
+    hoveredNodeId,
+    activeFilter,
+    onNodeRevealChange,
+  };
+
+  // Initialize ambient neural dust particles once
+  useEffect(() => {
+    const particles: AmbientParticle[] = [];
+    const count = 88;
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 60 + Math.random() * 980;
+      particles.push({
+        x: Math.cos(angle) * dist,
+        y: Math.sin(angle) * dist,
+        vx: (Math.random() - 0.5) * 0.16,
+        vy: (Math.random() - 0.5) * 0.16,
+        size: 1 + Math.random() * 1.9,
+        alpha: 0.18 + Math.random() * 0.42,
+      });
+    }
+    particlesRef.current = particles;
+  }, []);
+
+  // Reset nanotech filament drawing states whenever generationEpoch triggers or edges change
+  useEffect(() => {
+    generationStartRef.current = performance.now();
+    const map = new Map<string, EdgeAnimState>();
+    const nodeById = new Map(nodes.map((n) => [n.project.id, n]));
+
+    for (const edge of edges) {
+      if (edge.kind === 'primary') {
+        const node = nodeById.get(edge.toId);
+        // Innermost (most recent) filaments launch first, rippling outward!
+        const delayMs = node ? (1 - node.recencyScore) * 520 : 0;
+        map.set(edge.id, {
+          progress: viewMode === 'ABOUT_FULLSCREEN' ? 0.12 : 0,
+          delayMs,
+          sparkBurst: 0,
+          wasVisible: true,
+        });
+      } else {
+        map.set(edge.id, {
+          progress: 0,
+          delayMs: 360 + Math.random() * 320,
+          sparkBurst: 0,
+          wasVisible: false,
+        });
+      }
+    }
+
+    edgeStatesRef.current = map;
+    revealedSetRef.current = new Set();
+    onNodeRevealChange?.(new Set());
+  }, [edges, nodes, generationEpoch]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let rafId = 0;
+    let lastTime = performance.now();
+
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    resize();
+    window.addEventListener('resize', resize);
+
+    const render = (now: number) => {
+      const dt = Math.min(0.05, (now - lastTime) / 1000);
+      lastTime = now;
+
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const cam = cameraRef.current;
+      const velocity = velocityRef.current;
+      const pointer = pointerScreenRef.current;
+      const {
+        nodes: currentNodes,
+        edges: currentEdges,
+        viewMode: mode,
+        selectedNodeId: selectedId,
+        hoveredNodeId: hoveredId,
+        activeFilter: filter,
+        onNodeRevealChange: notifyRevealed,
+      } = propsRef.current;
+
+      ctx.clearRect(0, 0, width, height);
+
+      // Subtle radial core atmospheric glow
+      const coreScreenX = width * 0.5 - cam.x * cam.zoom;
+      const coreScreenY = height * 0.5 - cam.y * cam.zoom;
+      const glowRadius = Math.max(260, 460 * cam.zoom);
+      const bgGlow = ctx.createRadialGradient(
+        coreScreenX,
+        coreScreenY,
+        0,
+        coreScreenX,
+        coreScreenY,
+        glowRadius
+      );
+      bgGlow.addColorStop(0, 'rgba(0, 240, 255, 0.13)');
+      bgGlow.addColorStop(0.45, 'rgba(8, 145, 178, 0.045)');
+      bgGlow.addColorStop(1, 'rgba(4, 8, 15, 0)');
+      ctx.fillStyle = bgGlow;
+      ctx.fillRect(0, 0, width, height);
+
+      // Convert pointer screen coords to world coords for dynamic nanotech weave
+      const pointerWorldX = cam.x + (pointer.x - width * 0.5) / cam.zoom;
+      const pointerWorldY = cam.y + (pointer.y - height * 0.5) / cam.zoom;
+
+      // World-space viewport bounds (for viewport-reactive line drawing)
+      const halfWorldW = (width * 0.52) / cam.zoom;
+      const halfWorldH = (height * 0.52) / cam.zoom;
+      const isInViewport = (wx: number, wy: number, pad = 90) =>
+        Math.abs(wx - cam.x) <= halfWorldW + pad &&
+        Math.abs(wy - cam.y) <= halfWorldH + pad;
+
+      ctx.save();
+      ctx.translate(width * 0.5, height * 0.5);
+      ctx.scale(cam.zoom, cam.zoom);
+      ctx.translate(-cam.x, -cam.y);
+
+      // 1. Concentric recency orbit rings around Center Core (0, 0)
+      const maxNodeR = currentNodes.reduce((m, n) => Math.max(m, n.radius), 460);
+      const orbitRings = [
+        { r: 195, label: 'RECENT' },
+        { r: Math.round(195 + (maxNodeR - 195) * 0.5), label: 'MID-TIMELINE' },
+        { r: Math.round(maxNodeR + 24), label: 'EARLIER ARCHIVE' },
+      ];
+
+      ctx.save();
+      for (const ring of orbitRings) {
+        ctx.beginPath();
+        ctx.arc(0, 0, ring.r, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.08)';
+        ctx.lineWidth = 1 / cam.zoom;
+        ctx.setLineDash([5 / cam.zoom, 9 / cam.zoom]);
+        ctx.stroke();
+
+        if (mode !== 'ABOUT_FULLSCREEN' && cam.zoom > 0.45) {
+          ctx.setLineDash([]);
+          ctx.fillStyle = 'rgba(0, 240, 255, 0.24)';
+          ctx.font = `500 ${Math.max(8, 10 / cam.zoom)}px "JetBrains Mono", monospace`;
+          ctx.fillText(ring.label, 8, -ring.r + 12 / cam.zoom);
+        }
+      }
+      ctx.restore();
+
+      // 2. Ambient neural dust + dynamic nanotech triangulation filaments near cursor/motion
+      const particles = particlesRef.current;
+      const nearbyParticles: AmbientParticle[] = [];
+
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (!isInViewport(p.x, p.y, 140)) continue;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size / Math.sqrt(cam.zoom), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0, 240, 255, ${p.alpha * 0.65})`;
+        ctx.fill();
+
+        const distToFocus = pointer.active
+          ? Math.hypot(p.x - pointerWorldX, p.y - pointerWorldY)
+          : Math.hypot(p.x - cam.x, p.y - cam.y);
+        if (distToFocus < 240 / Math.max(0.6, cam.zoom)) {
+          nearbyParticles.push(p);
+        }
+      }
+
+      // Dynamic nanotech micro-mesh weaving around pointer or during active panning
+      if (mode !== 'ABOUT_FULLSCREEN' && nearbyParticles.length > 1) {
+        const meshStrength = Math.min(1, 0.28 + velocity * 0.06);
+        ctx.lineWidth = 0.85 / cam.zoom;
+        for (let i = 0; i < nearbyParticles.length; i++) {
+          for (let j = i + 1; j < nearbyParticles.length; j++) {
+            const a = nearbyParticles[i];
+            const b = nearbyParticles[j];
+            const d = Math.hypot(b.x - a.x, b.y - a.y);
+            if (d < 155) {
+              const alpha = (1 - d / 155) * 0.22 * meshStrength;
+              ctx.strokeStyle = `rgba(0, 240, 255, ${alpha})`;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+            }
+          }
+        }
+      }
+
+      // 3. Draw Primary & Secondary Synapse Edges with progressive nanotech assembly
+      const elapsedSinceGen = now - generationStartRef.current;
+      const matchingNodeIds = new Set<string>();
+      if (filter) {
+        const filterLower = filter.toLowerCase();
+        for (const n of currentNodes) {
+          if (n.project.techStack.some((t) => t.toLowerCase() === filterLower)) {
+            matchingNodeIds.add(n.project.id);
+          }
+        }
+      }
+
+      let revealDirtyCount = 0;
+      let triggeredMovementSound = false;
+
+      for (const edge of currentEdges) {
+        let state = edgeStatesRef.current.get(edge.id);
+        if (!state) {
+          state = { progress: 1, delayMs: 0, sparkBurst: 0, wasVisible: true };
+          edgeStatesRef.current.set(edge.id, state);
+        }
+
+        const inView =
+          edge.kind === 'primary'
+            ? isInViewport(edge.toX, edge.toY, 24)
+            : isInViewport(edge.toX, edge.toY, 65) ||
+              isInViewport(edge.controlX, edge.controlY, 45);
+        const nearPointer =
+          pointer.active &&
+          (Math.hypot(edge.toX - pointerWorldX, edge.toY - pointerWorldY) < 270 ||
+            Math.hypot(edge.controlX - pointerWorldX, edge.controlY - pointerWorldY) < 250);
+
+        const isHighlighted =
+          selectedId === edge.toId ||
+          selectedId === edge.fromId ||
+          hoveredId === edge.toId ||
+          hoveredId === edge.fromId;
+
+        if (mode === 'ABOUT_FULLSCREEN') {
+          // Subtle pulsing core filaments radiating out behind About Me card
+          if (edge.kind === 'primary') {
+            state.progress += (0.42 - state.progress) * Math.min(1, dt * 3);
+          } else {
+            state.progress += (0 - state.progress) * Math.min(1, dt * 4);
+          }
+        } else if (edge.kind === 'primary') {
+          if (elapsedSinceGen >= state.delayMs) {
+            const target = inView || isHighlighted ? 1 : 0.2;
+            const prev = state.progress;
+            const speed = target > prev ? 2.45 : 1.35;
+            state.progress =
+              target > prev
+                ? Math.min(target, prev + dt * speed)
+                : Math.max(target, prev - dt * speed);
+
+            // Detect newly entering viewport while moving around -> nanotech trickle!
+            if (!state.wasVisible && inView && prev < 0.78) {
+              triggeredMovementSound = true;
+            }
+            state.wasVisible = inView;
+
+            // Fire node materialization burst when primary dendrite arrives
+            if (prev < 0.96 && state.progress >= 0.96) {
+              state.sparkBurst = 1;
+              if (!revealedSetRef.current.has(edge.toId)) {
+                revealedSetRef.current.add(edge.toId);
+                revealDirtyCount++;
+              }
+            } else if (
+              !inView &&
+              !isHighlighted &&
+              state.progress < 0.45 &&
+              revealedSetRef.current.has(edge.toId)
+            ) {
+              // Off-screen nodes retract so panning back re-forges them dynamically
+              revealedSetRef.current.delete(edge.toId);
+              revealDirtyCount++;
+            }
+          }
+        } else {
+          // Secondary associative synapses dynamically draw in when in view + moving/hovering
+          const shouldDraw =
+            elapsedSinceGen >= state.delayMs &&
+            (isHighlighted || (inView && (nearPointer || velocity > 0.6 || cam.zoom > 0.85)));
+          const target = shouldDraw ? 1 : 0;
+          const prev = state.progress;
+          state.progress =
+            target > prev
+              ? Math.min(1, prev + dt * 2.1)
+              : Math.max(0, prev - dt * 1.45);
+
+          if (prev < 0.08 && state.progress >= 0.08 && velocity > 0.8) {
+            triggeredMovementSound = true;
+          }
+        }
+
+        if (state.sparkBurst > 0) {
+          state.sparkBurst = Math.max(0, state.sparkBurst - dt * 2.4);
+        }
+
+        if (state.progress <= 0.01) continue;
+
+        const isDimmedByFilter =
+          Boolean(filter) &&
+          !(matchingNodeIds.has(edge.toId) || matchingNodeIds.has(edge.fromId));
+
+        // Base edge styling
+        let strokeColor: string;
+        let lineWidth: number;
+        if (edge.kind === 'primary') {
+          const baseAlpha = isDimmedByFilter
+            ? 0.08
+            : isHighlighted
+              ? 0.92
+              : 0.2 + edge.recencyWeight * 0.34;
+          strokeColor = isHighlighted
+            ? `rgba(0, 240, 255, ${baseAlpha})`
+            : `rgba(34, 211, 238, ${baseAlpha})`;
+          lineWidth = (isHighlighted ? 2.6 : 1.15 + edge.recencyWeight * 0.95) / Math.sqrt(cam.zoom);
+        } else {
+          const secAlpha = isDimmedByFilter
+            ? 0.04
+            : isHighlighted
+              ? 0.52
+              : 0.16;
+          strokeColor = `rgba(14, 165, 233, ${secAlpha})`;
+          lineWidth = (isHighlighted ? 1.5 : 0.9) / Math.sqrt(cam.zoom);
+        }
+
+        ctx.save();
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = lineWidth;
+        if (isHighlighted) {
+          ctx.shadowColor = 'rgba(0, 240, 255, 0.85)';
+          ctx.shadowBlur = 14;
+        }
+
+        const { tipX, tipY } = strokePartialQuadBezier(
+          ctx,
+          edge.fromX,
+          edge.fromY,
+          edge.controlX,
+          edge.controlY,
+          edge.toX,
+          edge.toY,
+          state.progress
+        );
+        ctx.restore();
+
+        // Draw glowing nanotech forge spark at the active drawing tip!
+        if (state.progress > 0.03 && state.progress < 0.99) {
+          const sparkGrad = ctx.createRadialGradient(
+            tipX,
+            tipY,
+            0,
+            tipX,
+            tipY,
+            14 / Math.sqrt(cam.zoom)
+          );
+          sparkGrad.addColorStop(0, '#ffffff');
+          sparkGrad.addColorStop(0.35, 'rgba(0, 240, 255, 0.95)');
+          sparkGrad.addColorStop(1, 'rgba(0, 240, 255, 0)');
+          ctx.fillStyle = sparkGrad;
+          ctx.beginPath();
+          ctx.arc(tipX, tipY, 14 / Math.sqrt(cam.zoom), 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Materialization arrival ring burst when filament locks onto its node
+        if (state.sparkBurst > 0) {
+          const burstR = (1 - state.sparkBurst) * 44 + 14;
+          ctx.beginPath();
+          ctx.arc(edge.toX, edge.toY, burstR, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(0, 240, 255, ${state.sparkBurst * 0.78})`;
+          ctx.lineWidth = 1.8 / Math.sqrt(cam.zoom);
+          ctx.stroke();
+        }
+
+        // Animated bioluminescent signal pulse along completed primary dendrites
+        if (
+          edge.kind === 'primary' &&
+          state.progress >= 0.99 &&
+          !isDimmedByFilter &&
+          mode !== 'ABOUT_FULLSCREEN'
+        ) {
+          const speed = isHighlighted ? 0.65 : 0.24 + edge.recencyWeight * 0.14;
+          const phase = (now * 0.001 * speed + edge.recencyWeight * 3.7) % 1;
+          const pt = evalQuadBezier(
+            edge.fromX,
+            edge.fromY,
+            edge.controlX,
+            edge.controlY,
+            edge.toX,
+            edge.toY,
+            phase
+          );
+          const pulseRadius = (isHighlighted ? 5.2 : 3.2) / Math.sqrt(cam.zoom);
+          const pulseGrad = ctx.createRadialGradient(
+            pt.x,
+            pt.y,
+            0,
+            pt.x,
+            pt.y,
+            pulseRadius * 2.5
+          );
+          pulseGrad.addColorStop(0, '#ffffff');
+          pulseGrad.addColorStop(0.4, 'rgba(0, 240, 255, 0.9)');
+          pulseGrad.addColorStop(1, 'rgba(0, 240, 255, 0)');
+          ctx.fillStyle = pulseGrad;
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, pulseRadius * 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      ctx.restore();
+
+      // Notify DOM overlay when nodes materialize or retract
+      if (revealDirtyCount > 0) {
+        notifyRevealed?.(new Set(revealedSetRef.current));
+      }
+
+      // Fire subtle metallic trickling sound as lines draw while moving around
+      if (
+        mode !== 'ABOUT_FULLSCREEN' &&
+        mode !== 'PROJECT_FULLSCREEN' &&
+        (triggeredMovementSound || velocity > 2.4)
+      ) {
+        const panHint = pointer.active
+          ? (pointer.x / Math.max(1, width) - 0.5) * 1.1
+          : 0;
+        nanotechAudio.playMovementTick(
+          Math.min(1, velocity / 14 + (triggeredMovementSound ? 0.35 : 0)),
+          panHint
+        );
+      }
+
+      rafId = requestAnimationFrame(render);
+    };
+
+    rafId = requestAnimationFrame(render);
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', resize);
+    };
+  }, [cameraRef, velocityRef, pointerScreenRef]);
+
+  return <canvas ref={canvasRef} className="neural-canvas" aria-hidden="true" />;
+}

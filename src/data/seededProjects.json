@@ -1,0 +1,361 @@
+{
+  "syncedAt": "2026-11-19T00:45:15.938Z",
+  "profile": {
+    "name": "Sameer Khichi",
+    "handle": "sameerkhichi",
+    "bio": "A student at McMaster University, eager to learn and discover while traversing the digital world, seeking experience and opportunities wherever they arise.",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/181767715?v=4",
+    "githubUrl": "https://github.com/sameerkhichi",
+    "location": "Hamilton"
+  },
+  "projects": [
+    {
+      "id": "gh-leetcode-library",
+      "repoName": "leetcode-library",
+      "title": "Leetcode Library",
+      "shortDescription": "Storing all leetcode and similar questions that I have solved.",
+      "fullSummary": "Storing all leetcode and similar questions that I have solved.",
+      "highlights": [
+        "Primary technologies: Python",
+        "Last active: Nov 2026",
+        "Open-source repository on GitHub"
+      ],
+      "date": "2026-11-18T21:05:49Z",
+      "displayDate": "Nov 2026",
+      "techStack": [
+        "Python"
+      ],
+      "githubUrl": "https://github.com/sameerkhichi/leetcode-library",
+      "images": [],
+      "stars": 0,
+      "fork": false,
+      "isPrivate": false,
+      "source": "github"
+    },
+    {
+      "id": "gh-blescraper",
+      "repoName": "BLEScraper",
+      "title": "BLEScraper",
+      "shortDescription": "mobile app to scrape and collect data sent over unencrypted GATT bluetooth low energy packets from a BLE device. Reverse engineered protocols decode the data. This app then allows sending that data to an IP, server or any endpoint for data proccessing. ",
+      "fullSummary": "mobile app to scrape and collect data sent over unencrypted GATT bluetooth low energy packets from a BLE device. Reverse engineered protocols decode the data. This app then allows sending that data to an IP, server or any endpoint for data proccessing. ",
+      "highlights": [
+        "Primary technologies: TypeScript",
+        "Last active: Nov 2026",
+        "Open-source repository on GitHub"
+      ],
+      "date": "2026-11-12T06:00:50Z",
+      "displayDate": "Nov 2026",
+      "techStack": [
+        "TypeScript"
+      ],
+      "githubUrl": "https://github.com/sameerkhichi/BLEScraper",
+      "images": [],
+      "stars": 0,
+      "fork": false,
+      "isPrivate": false,
+      "source": "github"
+    },
+    {
+      "id": "gh-anticeldocs",
+      "repoName": "AntiCELDocs",
+      "title": "AntiCELDocs",
+      "shortDescription": "Documentation, Privacy Policy and Terms&Conditions for AntiCEL. Go and Download the real thing on the App Store!",
+      "fullSummary": "Documentation, Privacy Policy and Terms&Conditions for AntiCEL. Go and Download the real thing on the App Store!",
+      "highlights": [
+        "Primary technologies: HTML",
+        "Last active: Oct 2026",
+        "Open-source repository on GitHub"
+      ],
+      "date": "2026-10-30T05:16:42Z",
+      "displayDate": "Oct 2026",
+      "techStack": [
+        "HTML"
+      ],
+      "githubUrl": "https://github.com/sameerkhichi/AntiCELDocs",
+      "liveUrl": "https://apps.apple.com/ca/app/anticel/id6808880922",
+      "images": [],
+      "stars": 0,
+      "fork": false,
+      "isPrivate": false,
+      "source": "github"
+    },
+    {
+      "id": "gh-sameerkhichi",
+      "repoName": "sameerkhichi",
+      "title": "Sameerkhichi",
+      "shortDescription": "software project engineered by Sameer Khichi.",
+      "fullSummary": "Repository \"sameerkhichi\" created on GitHub.",
+      "highlights": [
+        "Custom software implementation",
+        "Last active: Oct 2026",
+        "Open-source repository on GitHub"
+      ],
+      "date": "2026-10-29T15:33:25Z",
+      "displayDate": "Oct 2026",
+      "techStack": [
+        "Software"
+      ],
+      "githubUrl": "https://github.com/sameerkhichi/sameerkhichi",
+      "images": [],
+      "stars": 0,
+      "fork": false,
+      "isPrivate": false,
+      "source": "github"
+    },
+    {
+      "id": "gh-facial_recognition_model",
+      "repoName": "Facial_Recognition_Model",
+      "title": "Facial Recognition Model",
+      "shortDescription": "This is a facial recognition model built using tensorflow leveraging a siamese neural network.",
+      "fullSummary": "This is a facial recognition model built using tensorflow leveraging a siamese neural network.",
+      "highlights": [
+        "Primary technologies: Python",
+        "Last active: Sep 2025",
+        "Open-source repository on GitHub"
+      ],
+      "date": "2025-09-06T22:03:16Z",
+      "displayDate": "Sep 2025",
+      "techStack": [
+        "Python"
+      ],
+      "githubUrl": "https://github.com/sameerkhichi/Facial_Recognition_Model",
+      "liveUrl": "https://github.com/sameerkhichi/Facial_Recognition_Model/releases/tag/v1.0.0",
+      "images": [],
+      "stars": 0,
+      "fork": false,
+      "isPrivate": false,
+      "source": "github"
+    },
+    {
+      "id": "gh-mcmaster_shuttle_tracker",
+      "repoName": "McMaster_Shuttle_Tracker",
+      "title": "McMaster Shuttle Tracker",
+      "shortDescription": "A web app tracking and sharing McMaster parking shuttle services.",
+      "fullSummary": "A web app tracking and sharing McMaster parking shuttle services.",
+      "highlights": [
+        "Primary technologies: Python",
+        "Last active: Jul 2025",
+        "Open-source repository on GitHub"
+      ],
+      "date": "2025-08-01T01:49:44Z",
+      "displayDate": "Jul 2025",
+      "techStack": [
+        "Python"
+      ],
+      "githubUrl": "https://github.com/sameerkhichi/McMaster_Shuttle_Tracker",
+      "liveUrl": "https://mcmaster-shuttle-tracker.onrender.com",
+      "images": [],
+      "stars": 0,
+      "fork": false,
+      "isPrivate": false,
+      "source": "github"
+    },
+    {
+      "id": "gh-maze-runner",
+      "repoName": "Maze-Runner",
+      "title": "Maze Runner",
+      "shortDescription": "This repository is for Assignment 3 of 2AA4 Intro to Software Engineering. It is a tested and refactored version of Assignment 1's maze runner.",
+      "fullSummary": "This repository is for Assignment 3 of 2AA4 Intro to Software Engineering. It is a tested and refactored version of Assignment 1's maze runner.",
+      "highlights": [
+        "Primary technologies: Java",
+        "Last active: Apr 2025",
+        "Open-source repository on GitHub"
+      ],
+      "date": "2025-04-03T03:40:38Z",
+      "displayDate": "Apr 2025",
+      "techStack": [
+        "Java"
+      ],
+      "githubUrl": "https://github.com/sameerkhichi/Maze-Runner",
+      "images": [],
+      "stars": 0,
+      "fork": false,
+      "isPrivate": false,
+      "source": "github"
+    },
+    {
+      "id": "gh-drone-rescue-system",
+      "repoName": "Drone-Rescue-System",
+      "title": "Drone Rescue System",
+      "shortDescription": "Template for the Second assignment of 2AA4 (2025W). This is a repository for Assignment 2 - 2AA4 Intro to Software Development",
+      "fullSummary": "Template for the Second assignment of 2AA4 (2025W). This is a repository for Assignment 2 - 2AA4 Intro to Software Development",
+      "highlights": [
+        "Primary technologies: Java",
+        "Last active: Mar 2025",
+        "Open-source repository on GitHub"
+      ],
+      "date": "2025-03-25T03:57:20Z",
+      "displayDate": "Mar 2025",
+      "techStack": [
+        "Java"
+      ],
+      "githubUrl": "https://github.com/sameerkhichi/Drone-Rescue-System",
+      "images": [],
+      "stars": 0,
+      "fork": true,
+      "isPrivate": false,
+      "source": "github"
+    },
+    {
+      "id": "gh-traffic_simulator",
+      "repoName": "Traffic_Simulator",
+      "title": "Traffic Simulator",
+      "shortDescription": "Designing an optimal and futureproof intersection using an existing framework to improve traffic flow through populated areas",
+      "fullSummary": "Designing an optimal and futureproof intersection using an existing framework to improve traffic flow through populated areas",
+      "highlights": [
+        "Primary technologies: Python",
+        "Last active: Feb 2025",
+        "Open-source repository on GitHub"
+      ],
+      "date": "2025-03-01T03:32:21Z",
+      "displayDate": "Feb 2025",
+      "techStack": [
+        "Python"
+      ],
+      "githubUrl": "https://github.com/sameerkhichi/Traffic_Simulator",
+      "images": [],
+      "stars": 0,
+      "fork": false,
+      "isPrivate": false,
+      "source": "github"
+    },
+    {
+      "id": "gh-maze_runner",
+      "repoName": "Maze_Runner",
+      "title": "Maze Runner",
+      "shortDescription": "Template for the first assignment of 2AA4 (2025W). This is a repository for Assignment 1 - 2AA4 Intro to Software Development",
+      "fullSummary": "Template for the first assignment of 2AA4 (2025W). This is a repository for Assignment 1 - 2AA4 Intro to Software Development",
+      "highlights": [
+        "Primary technologies: Java",
+        "Last active: Feb 2025",
+        "Open-source repository on GitHub"
+      ],
+      "date": "2025-02-01T23:06:44Z",
+      "displayDate": "Feb 2025",
+      "techStack": [
+        "Java"
+      ],
+      "githubUrl": "https://github.com/sameerkhichi/Maze_Runner",
+      "images": [],
+      "stars": 0,
+      "fork": true,
+      "isPrivate": false,
+      "source": "github"
+    },
+    {
+      "id": "gh-ai_checklist",
+      "repoName": "AI_Checklist",
+      "title": "AI Checklist",
+      "shortDescription": "This is structured to be a to-do list but also powered by an AI model to automatically generate useful tasks to complete. Soon to be published on AWS",
+      "fullSummary": "This is structured to be a to-do list but also powered by an AI model to automatically generate useful tasks to complete. Soon to be published on AWS",
+      "highlights": [
+        "Primary technologies: Python",
+        "Last active: Jan 2025",
+        "Open-source repository on GitHub"
+      ],
+      "date": "2025-01-19T05:33:36Z",
+      "displayDate": "Jan 2025",
+      "techStack": [
+        "Python"
+      ],
+      "githubUrl": "https://github.com/sameerkhichi/AI_Checklist",
+      "images": [],
+      "stars": 0,
+      "fork": false,
+      "isPrivate": false,
+      "source": "github"
+    },
+    {
+      "id": "gh-pdf_merger",
+      "repoName": "PDF_Merger",
+      "title": "PDF Merger",
+      "shortDescription": "Worried about using online PDF mergers with sensitive data? Fear not, you can now merge them locally! ",
+      "fullSummary": "Worried about using online PDF mergers with sensitive data? Fear not, you can now merge them locally! ",
+      "highlights": [
+        "Primary technologies: Python",
+        "Last active: Jan 2025",
+        "Open-source repository on GitHub"
+      ],
+      "date": "2025-01-16T23:35:39Z",
+      "displayDate": "Jan 2025",
+      "techStack": [
+        "Python"
+      ],
+      "githubUrl": "https://github.com/sameerkhichi/PDF_Merger",
+      "images": [],
+      "stars": 0,
+      "fork": false,
+      "isPrivate": false,
+      "source": "github"
+    },
+    {
+      "id": "gh-keylogger",
+      "repoName": "keylogger",
+      "title": "Keylogger",
+      "shortDescription": "Creating a keylogger in python with functionality to store keystrokes.",
+      "fullSummary": "Creating a keylogger in python with functionality to store keystrokes.",
+      "highlights": [
+        "Primary technologies: Python",
+        "Last active: Jan 2025",
+        "Open-source repository on GitHub"
+      ],
+      "date": "2025-01-03T03:32:42Z",
+      "displayDate": "Jan 2025",
+      "techStack": [
+        "Python"
+      ],
+      "githubUrl": "https://github.com/sameerkhichi/keylogger",
+      "images": [],
+      "stars": 0,
+      "fork": false,
+      "isPrivate": false,
+      "source": "github"
+    },
+    {
+      "id": "gh-tictactoe-command-line",
+      "repoName": "TicTacToe-Command-Line",
+      "title": "TicTacToe Command Line",
+      "shortDescription": "A TicTacToe game coded to be played in the command line",
+      "fullSummary": "A TicTacToe game coded to be played in the command line",
+      "highlights": [
+        "Primary technologies: Java",
+        "Last active: Dec 2024",
+        "Open-source repository on GitHub"
+      ],
+      "date": "2024-12-19T18:55:44Z",
+      "displayDate": "Dec 2024",
+      "techStack": [
+        "Java"
+      ],
+      "githubUrl": "https://github.com/sameerkhichi/TicTacToe-Command-Line",
+      "images": [],
+      "stars": 0,
+      "fork": false,
+      "isPrivate": false,
+      "source": "github"
+    },
+    {
+      "id": "gh-aimtraining-game",
+      "repoName": "AimTraining-Game",
+      "title": "AimTraining Game",
+      "shortDescription": "A Small program experimenting with Java.swing to develop a GUI for a game. This specific program simply tests the users hand-eye coordination with an aim-trainer.",
+      "fullSummary": "A Small program experimenting with Java.swing to develop a GUI for a game. This specific program simply tests the users hand-eye coordination with an aim-trainer.",
+      "highlights": [
+        "Primary technologies: Java",
+        "Last active: Dec 2024",
+        "Open-source repository on GitHub"
+      ],
+      "date": "2024-12-16T20:14:44Z",
+      "displayDate": "Dec 2024",
+      "techStack": [
+        "Java"
+      ],
+      "githubUrl": "https://github.com/sameerkhichi/AimTraining-Game",
+      "images": [],
+      "stars": 0,
+      "fork": false,
+      "isPrivate": false,
+      "source": "github"
+    }
+  ]
+}
