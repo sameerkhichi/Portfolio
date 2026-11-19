@@ -59,60 +59,56 @@ export function AboutOverlay({
         </button>
       </div>
 
-      <div className="about-card">
-        <h1 className="about-name">{profile.name}</h1>
+      <div className="about-fullscreen-content">
+        <header className="about-hero-header">
+          <h1 className="about-name">{profile.name}</h1>
 
-        <p className="about-bio">{profile.bio}</p>
+          <div className="about-links-row">
+            <a
+              href={profile.githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-link-btn"
+              onMouseEnter={() => nanotechAudio.playNodeHover()}
+            >
+              <Github size={18} color="#00F0FF" />
+              <span>GitHub</span>
+            </a>
 
-        <div className="about-links-row">
-          <a
-            href={profile.githubUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="social-link-btn"
-            onMouseEnter={() => nanotechAudio.playNodeHover()}
-          >
-            <Github size={17} color="#00F0FF" />
-            <span>GitHub</span>
-          </a>
+            <a
+              href={profile.linkedinUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="social-link-btn"
+              onMouseEnter={() => nanotechAudio.playNodeHover()}
+            >
+              <Linkedin size={18} color="#00F0FF" />
+              <span>LinkedIn</span>
+            </a>
+          </div>
+        </header>
 
-          <a
-            href={profile.linkedinUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="social-link-btn"
-            onMouseEnter={() => nanotechAudio.playNodeHover()}
-          >
-            <Linkedin size={17} color="#00F0FF" />
-            <span>LinkedIn</span>
-          </a>
+        <div className="about-bio-section">
+          <p className="about-bio">{profile.bio}</p>
         </div>
 
-        <button
-          type="button"
-          className="primary-library-btn"
-          onMouseEnter={() => nanotechAudio.playNodeHover()}
-          onClick={onOpenProjectLibrary}
-        >
-          <Network size={19} />
-          <span>Project Library</span>
-          {projectCount > 0 && (
-            <span
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.76rem',
-                padding: '2px 8px',
-                borderRadius: '9999px',
-                background: 'rgba(2, 18, 31, 0.22)',
-              }}
-            >
-              {projectCount}
-            </span>
-          )}
-        </button>
+        <div className="about-cta-section">
+          <button
+            type="button"
+            className="primary-library-btn"
+            onMouseEnter={() => nanotechAudio.playNodeHover()}
+            onClick={onOpenProjectLibrary}
+          >
+            <Network size={22} />
+            <span>Project Library</span>
+            {projectCount > 0 && (
+              <span className="library-count-pill">{projectCount}</span>
+            )}
+          </button>
 
-        <div className="pinch-hint">
-          <span>Click Project Library or pinch out to explore projects</span>
+          <div className="pinch-hint">
+            <span>click or pinch screen</span>
+          </div>
         </div>
       </div>
     </section>
