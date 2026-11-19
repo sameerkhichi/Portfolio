@@ -35,6 +35,7 @@ interface EdgeAnimState {
   delayMs: number;
   sparkBurst: number;
   wasVisible: boolean;
+  pulsePhase: number;
 }
 
 function evalQuadBezier(
@@ -146,6 +147,7 @@ export function NeuralCanvas({
     const map = new Map<string, EdgeAnimState>();
     const nodeById = new Map(nodes.map((n) => [n.project.id, n]));
 
+    let primaryIndex = 0;
     for (const edge of edges) {
       if (edge.kind === 'primary') {
         const node = nodeById.get(edge.toId);
@@ -156,13 +158,17 @@ export function NeuralCanvas({
           delayMs,
           sparkBurst: 0,
           wasVisible: true,
+          // Stagger initial pulse phases across [0, 1.35) so orbs ripple organically
+          pulsePhase: (primaryIndex * 0.29) % 1.35,
         });
+        primaryIndex++;
       } else {
         map.set(edge.id, {
           progress: 0,
           delayMs: 360 + Math.random() * 320,
           sparkBurst: 0,
           wasVisible: false,
+          pulsePhase: 0,
         });
       }
     }
@@ -337,7 +343,13 @@ export function NeuralCanvas({
       for (const edge of currentEdges) {
         let state = edgeStatesRef.current.get(edge.id);
         if (!state) {
-          state = { progress: 1, delayMs: 0, sparkBurst: 0, wasVisible: true };
+          state = {
+            progress: 1,
+            delayMs: 0,
+            sparkBurst: 0,
+            wasVisible: true,
+            pulsePhase: 0,
+          };
           edgeStatesRef.current.set(edge.id, state);
         }
 
@@ -470,20 +482,23 @@ export function NeuralCanvas({
 
         // Draw glowing nanotech forge spark at the active drawing tip!
         if (state.progress > 0.03 && state.progress < 0.99) {
+          const sparkFade =
+            state.progress > 0.88 ? (0.99 - state.progress) / 0.11 : 1;
+          const sparkRadius = (14 / Math.sqrt(cam.zoom)) * (0.5 + 0.5 * sparkFade);
           const sparkGrad = ctx.createRadialGradient(
             tipX,
             tipY,
             0,
             tipX,
             tipY,
-            14 / Math.sqrt(cam.zoom)
+            sparkRadius
           );
-          sparkGrad.addColorStop(0, '#ffffff');
-          sparkGrad.addColorStop(0.35, 'rgba(0, 240, 255, 0.95)');
+          sparkGrad.addColorStop(0, `rgba(255, 255, 255, ${sparkFade})`);
+          sparkGrad.addColorStop(0.35, `rgba(0, 240, 255, ${0.95 * sparkFade})`);
           sparkGrad.addColorStop(1, 'rgba(0, 240, 255, 0)');
           ctx.fillStyle = sparkGrad;
           ctx.beginPath();
-          ctx.arc(tipX, tipY, 14 / Math.sqrt(cam.zoom), 0, Math.PI * 2);
+          ctx.arc(tipX, tipY, sparkRadius, 0, Math.PI * 2);
           ctx.fill();
         }
 
@@ -504,33 +519,49 @@ export function NeuralCanvas({
           !isDimmedByFilter &&
           mode !== 'ABOUT_FULLSCREEN'
         ) {
-          const speed = isHighlighted ? 0.65 : 0.24 + edge.recencyWeight * 0.14;
-          const phase = (now * 0.001 * speed + edge.recencyWeight * 3.7) % 1;
-          const pt = evalQuadBezier(
-            edge.fromX,
-            edge.fromY,
-            edge.controlX,
-            edge.controlY,
-            edge.toX,
-            edge.toY,
-            phase
-          );
-          const pulseRadius = (isHighlighted ? 5.2 : 3.2) / Math.sqrt(cam.zoom);
-          const pulseGrad = ctx.createRadialGradient(
-            pt.x,
-            pt.y,
-            0,
-            pt.x,
-            pt.y,
-            pulseRadius * 2.5
-          );
-          pulseGrad.addColorStop(0, '#ffffff');
-          pulseGrad.addColorStop(0.4, 'rgba(0, 240, 255, 0.9)');
-          pulseGrad.addColorStop(1, 'rgba(0, 240, 255, 0)');
-          ctx.fillStyle = pulseGrad;
-          ctx.beginPath();
-          ctx.arc(pt.x, pt.y, pulseRadius * 2.5, 0, Math.PI * 2);
-          ctx.fill();
+          const PULSE_TRAVEL_END = 0.94;
+          const PULSE_CYCLE_LEN = 1.38; // [0.94..1.38] = clean off-state cooldown
+          const speed = isHighlighted ? 0.62 : 0.24 + edge.recencyWeight * 0.14;
+          state.pulsePhase = (state.pulsePhase + dt * speed) % PULSE_CYCLE_LEN;
+
+          const p = state.pulsePhase;
+          // Only render while actively traveling; once it reaches the outer node, stay disappeared until next pulse
+          if (p > 0.04 && p < PULSE_TRAVEL_END) {
+            const fadeIn = Math.min(1, (p - 0.04) / 0.1);
+            const fadeOut =
+              p > 0.78 ? Math.max(0, (PULSE_TRAVEL_END - p) / (PULSE_TRAVEL_END - 0.78)) : 1;
+            const alpha = fadeIn * fadeOut;
+
+            if (alpha > 0.01) {
+              const pt = evalQuadBezier(
+                edge.fromX,
+                edge.fromY,
+                edge.controlX,
+                edge.controlY,
+                edge.toX,
+                edge.toY,
+                p
+              );
+              const pulseRadius =
+                ((isHighlighted ? 5.2 : 3.2) / Math.sqrt(cam.zoom)) *
+                (0.45 + 0.55 * alpha);
+              const pulseGrad = ctx.createRadialGradient(
+                pt.x,
+                pt.y,
+                0,
+                pt.x,
+                pt.y,
+                pulseRadius * 2.5
+              );
+              pulseGrad.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+              pulseGrad.addColorStop(0.4, `rgba(0, 240, 255, ${0.9 * alpha})`);
+              pulseGrad.addColorStop(1, 'rgba(0, 240, 255, 0)');
+              ctx.fillStyle = pulseGrad;
+              ctx.beginPath();
+              ctx.arc(pt.x, pt.y, pulseRadius * 2.5, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
         }
       }
 
