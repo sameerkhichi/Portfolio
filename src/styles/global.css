@@ -433,37 +433,6 @@ button {
   display: none;
 }
 
-.empty-filter-banner {
-  align-self: center;
-  pointer-events: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
-  border-radius: var(--radius-pill);
-  background: var(--bg-glass-strong);
-  border: 1px solid var(--aqua-border);
-  backdrop-filter: blur(14px);
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
-  color: var(--text-secondary);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
-}
-
-.empty-filter-banner strong {
-  color: var(--aqua-core);
-}
-
-.filter-reset-link {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: #03111c;
-  background: var(--aqua-core);
-  padding: 3px 10px;
-  border-radius: var(--radius-pill);
-  font-weight: 600;
-}
-
 .filter-chip {
   font-family: var(--font-mono);
   font-size: 0.72rem;

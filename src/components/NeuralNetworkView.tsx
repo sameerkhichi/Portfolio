@@ -78,12 +78,18 @@ export function NeuralNetworkView({
     return profile.name.slice(0, 2).toUpperCase();
   }, [profile.name]);
 
-  const matchingCount = useMemo(() => {
-    if (!activeFilter) return nodes.length;
-    return nodes.filter((node) =>
-      node.project.categories.includes(activeFilter)
-    ).length;
-  }, [nodes, activeFilter]);
+  const visibleCategories = useMemo(
+    () =>
+      PROJECT_CATEGORIES.filter((category) =>
+        nodes.some((node) => node.project.categories.includes(category))
+      ),
+    [nodes]
+  );
+
+  const effectiveFilter =
+    activeFilter && visibleCategories.includes(activeFilter)
+      ? activeFilter
+      : null;
 
   const toScreen = (wx: number, wy: number) => ({
     x: viewport.width * 0.5 + (wx - camera.x) * camera.zoom,
@@ -116,7 +122,7 @@ export function NeuralNetworkView({
         generationEpoch={generationEpoch}
         selectedNodeId={selectedNodeId}
         hoveredNodeId={hoveredNodeId}
-        activeFilter={activeFilter}
+        activeFilter={effectiveFilter}
         onNodeRevealChange={setRevealedNodeIds}
       />
 
@@ -159,8 +165,8 @@ export function NeuralNetworkView({
           const isRevealed =
             revealedNodeIds.has(node.project.id) || isSelected;
           const matchesFilter =
-            !activeFilter ||
-            node.project.categories.includes(activeFilter);
+            !effectiveFilter ||
+            node.project.categories.includes(effectiveFilter);
 
           const scaleFactor = Math.max(0.74, Math.min(1.22, camera.zoom * 1.05));
           const diameter = Math.round(node.nodeSize * 2);
@@ -249,35 +255,37 @@ export function NeuralNetworkView({
           </div>
 
           <div className="hud-right-group">
-            <div
-              className="filter-strip"
-              role="group"
-              aria-label="Filter projects by project type"
-            >
-              <button
-                type="button"
-                className={`filter-chip ${activeFilter === null ? 'is-active' : ''}`}
-                onClick={() => {
-                  setActiveFilter(null);
-                  nanotechAudio.playNodeHover();
-                }}
+            {visibleCategories.length > 0 && (
+              <div
+                className="filter-strip"
+                role="group"
+                aria-label="Filter projects by project type"
               >
-                All
-              </button>
-              {PROJECT_CATEGORIES.map((category) => (
                 <button
-                  key={category}
                   type="button"
-                  className={`filter-chip ${activeFilter === category ? 'is-active' : ''}`}
+                  className={`filter-chip ${effectiveFilter === null ? 'is-active' : ''}`}
                   onClick={() => {
-                    setActiveFilter(activeFilter === category ? null : category);
+                    setActiveFilter(null);
                     nanotechAudio.playNodeHover();
                   }}
                 >
-                  {category}
+                  All
                 </button>
-              ))}
-            </div>
+                {visibleCategories.map((category) => (
+                  <button
+                    key={category}
+                    type="button"
+                    className={`filter-chip ${effectiveFilter === category ? 'is-active' : ''}`}
+                    onClick={() => {
+                      setActiveFilter(effectiveFilter === category ? null : category);
+                      nanotechAudio.playNodeHover();
+                    }}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <button
               type="button"
@@ -290,24 +298,6 @@ export function NeuralNetworkView({
             </button>
           </div>
         </div>
-
-        {activeFilter && matchingCount === 0 && (
-          <div className="empty-filter-banner">
-            <span>
-              No projects tagged <strong>{activeFilter}</strong> yet — future builds incoming
-            </span>
-            <button
-              type="button"
-              className="filter-reset-link"
-              onClick={() => {
-                setActiveFilter(null);
-                nanotechAudio.playNodeHover();
-              }}
-            >
-              Reset
-            </button>
-          </div>
-        )}
 
         <div className="hud-bottom">
           <div className="recency-legend">
