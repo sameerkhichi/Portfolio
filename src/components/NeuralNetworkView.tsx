@@ -7,12 +7,14 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-react';
-import type {
-  CameraState,
-  PositionedProjectNode,
-  ProfileData,
-  SynapseEdge,
-  ViewMode,
+import {
+  PROJECT_CATEGORIES,
+  type CameraState,
+  type PositionedProjectNode,
+  type ProfileData,
+  type ProjectCategory,
+  type SynapseEdge,
+  type ViewMode,
 } from '../types/portfolio';
 import { NeuralCanvas } from './NeuralCanvas';
 import { nanotechAudio } from '../utils/nanotechAudio';
@@ -65,7 +67,7 @@ export function NeuralNetworkView({
   onFitAll,
 }: NeuralNetworkViewProps) {
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
-  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<ProjectCategory | null>(null);
   const [revealedNodeIds, setRevealedNodeIds] = useState<Set<string>>(new Set());
 
   const initials = useMemo(() => {
@@ -76,19 +78,12 @@ export function NeuralNetworkView({
     return profile.name.slice(0, 2).toUpperCase();
   }, [profile.name]);
 
-  // Top tech tags across all projects for quick filtering
-  const topTechFilters = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const node of nodes) {
-      for (const tag of node.project.techStack) {
-        counts.set(tag, (counts.get(tag) ?? 0) + 1);
-      }
-    }
-    return Array.from(counts.entries())
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 6)
-      .map(([tag]) => tag);
-  }, [nodes]);
+  const matchingCount = useMemo(() => {
+    if (!activeFilter) return nodes.length;
+    return nodes.filter((node) =>
+      node.project.categories.includes(activeFilter)
+    ).length;
+  }, [nodes, activeFilter]);
 
   const toScreen = (wx: number, wy: number) => ({
     x: viewport.width * 0.5 + (wx - camera.x) * camera.zoom,
@@ -165,9 +160,7 @@ export function NeuralNetworkView({
             revealedNodeIds.has(node.project.id) || isSelected;
           const matchesFilter =
             !activeFilter ||
-            node.project.techStack.some(
-              (t) => t.toLowerCase() === activeFilter.toLowerCase()
-            );
+            node.project.categories.includes(activeFilter);
 
           const scaleFactor = Math.max(0.74, Math.min(1.22, camera.zoom * 1.05));
           const diameter = Math.round(node.nodeSize * 2);
@@ -256,33 +249,35 @@ export function NeuralNetworkView({
           </div>
 
           <div className="hud-right-group">
-            {topTechFilters.length > 0 && (
-              <div className="filter-strip" role="group" aria-label="Filter projects by technology">
+            <div
+              className="filter-strip"
+              role="group"
+              aria-label="Filter projects by project type"
+            >
+              <button
+                type="button"
+                className={`filter-chip ${activeFilter === null ? 'is-active' : ''}`}
+                onClick={() => {
+                  setActiveFilter(null);
+                  nanotechAudio.playNodeHover();
+                }}
+              >
+                All
+              </button>
+              {PROJECT_CATEGORIES.map((category) => (
                 <button
+                  key={category}
                   type="button"
-                  className={`filter-chip ${activeFilter === null ? 'is-active' : ''}`}
+                  className={`filter-chip ${activeFilter === category ? 'is-active' : ''}`}
                   onClick={() => {
-                    setActiveFilter(null);
+                    setActiveFilter(activeFilter === category ? null : category);
                     nanotechAudio.playNodeHover();
                   }}
                 >
-                  All
+                  {category}
                 </button>
-                {topTechFilters.map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    className={`filter-chip ${activeFilter === tag ? 'is-active' : ''}`}
-                    onClick={() => {
-                      setActiveFilter(activeFilter === tag ? null : tag);
-                      nanotechAudio.playNodeHover();
-                    }}
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            )}
+              ))}
+            </div>
 
             <button
               type="button"
@@ -295,6 +290,24 @@ export function NeuralNetworkView({
             </button>
           </div>
         </div>
+
+        {activeFilter && matchingCount === 0 && (
+          <div className="empty-filter-banner">
+            <span>
+              No projects tagged <strong>{activeFilter}</strong> yet — future builds incoming
+            </span>
+            <button
+              type="button"
+              className="filter-reset-link"
+              onClick={() => {
+                setActiveFilter(null);
+                nanotechAudio.playNodeHover();
+              }}
+            >
+              Reset
+            </button>
+          </div>
+        )}
 
         <div className="hud-bottom">
           <div className="recency-legend">

@@ -1,3 +1,17 @@
+export const PROJECT_CATEGORIES = [
+  'Web App',
+  'AI/ML',
+  'Cybersecurity',
+  'Software/Hardware',
+  'Mobile Dev',
+  'Video Game Dev',
+  'Systems & Tools',
+  'Cloud & DevOps',
+  'Data Science',
+] as const;
+
+export type ProjectCategory = (typeof PROJECT_CATEGORIES)[number];
+
 export type ViewMode =
   | 'ABOUT_FULLSCREEN'
   | 'NETWORK'
@@ -29,6 +43,7 @@ export interface ProjectItem {
   highlights: string[];
   date: string;
   displayDate: string;
+  categories: ProjectCategory[];
   techStack: string[];
   githubUrl?: string;
   liveUrl?: string;
@@ -78,6 +93,10 @@ export interface CameraState {
   zoom: number;
 }
 
+export type SeededProjectItem = Omit<ProjectItem, 'categories'> & {
+  categories?: ProjectCategory[];
+};
+
 export interface SeededSnapshot {
   syncedAt: string;
   profile: {
@@ -88,5 +107,5 @@ export interface SeededSnapshot {
     githubUrl: string;
     location?: string;
   };
-  projects: ProjectItem[];
+  projects: SeededProjectItem[];
 }

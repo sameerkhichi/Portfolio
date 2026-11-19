@@ -37,6 +37,11 @@ export function ProjectOverviewPanel({
               />
               {project.displayDate}
             </span>
+            {project.categories.map((cat) => (
+              <span key={cat} className="meta-pill is-category">
+                {cat}
+              </span>
+            ))}
             {project.isPrivate && (
               <span className="meta-pill is-private">
                 <Lock

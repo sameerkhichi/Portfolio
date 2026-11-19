@@ -171,6 +171,11 @@ export function ProjectCatalogModal({
                 />
                 {project.displayDate}
               </span>
+              {project.categories.map((cat) => (
+                <span key={cat} className="meta-pill is-category">
+                  {cat}
+                </span>
+              ))}
               {typeof project.stars === 'number' && project.stars > 0 && (
                 <span className="meta-pill">
                   <Star

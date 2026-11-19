@@ -15,6 +15,7 @@ function makeProject(id: string, date: string, techStack = ['TypeScript']): Proj
     highlights: ['Highlight 1'],
     date,
     displayDate: date.slice(0, 7),
+    categories: ['Web App'],
     techStack,
     images: [],
     source: 'custom',

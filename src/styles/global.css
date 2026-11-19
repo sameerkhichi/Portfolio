@@ -418,14 +418,50 @@ button {
 .filter-strip {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   padding: 4px 6px;
   border-radius: var(--radius-pill);
   background: var(--bg-glass);
-  border: 1px solid rgba(0, 240, 255, 0.2);
+  border: 1px solid rgba(0, 240, 255, 0.22);
   backdrop-filter: blur(14px);
-  max-width: min(520px, 65vw);
+  max-width: min(720px, 68vw);
   overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filter-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.empty-filter-banner {
+  align-self: center;
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-glass-strong);
+  border: 1px solid var(--aqua-border);
+  backdrop-filter: blur(14px);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.empty-filter-banner strong {
+  color: var(--aqua-core);
+}
+
+.filter-reset-link {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #03111c;
+  background: var(--aqua-core);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
 }
 
 .filter-chip {
@@ -748,6 +784,12 @@ button {
   background: rgba(0, 240, 255, 0.1);
   border: 1px solid rgba(0, 240, 255, 0.28);
   color: var(--aqua-glow);
+}
+
+.meta-pill.is-category {
+  background: rgba(14, 165, 233, 0.14);
+  border-color: rgba(56, 189, 248, 0.36);
+  color: #7dd3fc;
 }
 
 .meta-pill.is-private {

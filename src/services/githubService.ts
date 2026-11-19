@@ -11,6 +11,7 @@ import type {
   ProfileData,
   ProjectItem,
   ProjectOverride,
+  SeededProjectItem,
   SeededSnapshot,
 } from '../types/portfolio';
 
@@ -48,7 +49,7 @@ export interface PortfolioDataResult {
   source: 'live' | 'seeded';
 }
 
-const seededSnapshot = seededSnapshotRaw as SeededSnapshot;
+const seededSnapshot = seededSnapshotRaw as unknown as SeededSnapshot;
 
 export function formatRepoTitle(name: string): string {
   return name
@@ -120,6 +121,7 @@ function normalizeGitHubRepo(repo: GitHubRepoResponse): ProjectItem {
     ],
     date: dateIso,
     displayDate,
+    categories: [],
     techStack: techStack.length > 0 ? techStack : ['Software'],
     githubUrl: isPrivate ? undefined : repo.html_url,
     liveUrl: repo.homepage?.trim() || undefined,
@@ -133,7 +135,7 @@ function normalizeGitHubRepo(repo: GitHubRepoResponse): ProjectItem {
 
 export function mergePortfolioProjects(params: {
   liveRepos?: GitHubRepoResponse[];
-  seededProjects?: ProjectItem[];
+  seededProjects?: SeededProjectItem[];
   overrides?: Record<string, ProjectOverride>;
   customProjects?: ProjectItem[];
   hiddenRepos?: string[];
@@ -151,7 +153,10 @@ export function mergePortfolioProjects(params: {
   // 1. Seed with build-time snapshot first (preserves any build-time private repo metadata)
   for (const seeded of seededProjects) {
     const key = (seeded.repoName || seeded.id).toLowerCase();
-    byKey.set(key, seeded);
+    byKey.set(key, {
+      ...seeded,
+      categories: seeded.categories ?? [],
+    });
   }
 
   // 2. Overlay fresh live public GitHub repos
@@ -181,6 +186,7 @@ export function mergePortfolioProjects(params: {
       ...override,
       date: finalDate,
       displayDate: override?.displayDate || formatDisplayDate(finalDate),
+      categories: override?.categories ?? item.categories ?? [],
       techStack: override?.techStack ?? item.techStack,
       highlights: override?.highlights ?? item.highlights,
       images: override?.images ?? item.images,
@@ -193,6 +199,7 @@ export function mergePortfolioProjects(params: {
     if (custom.hidden) continue;
     merged.push({
       ...custom,
+      categories: custom.categories ?? [],
       displayDate: custom.displayDate || formatDisplayDate(custom.date),
       source: 'custom',
     });

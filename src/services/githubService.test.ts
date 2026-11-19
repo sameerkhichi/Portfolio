@@ -40,6 +40,7 @@ describe('mergePortfolioProjects', () => {
       highlights: ['Fast inference'],
       date: '2026-08-01T00:00:00Z',
       displayDate: 'Aug 2026',
+      categories: ['AI/ML'],
       techStack: ['Rust'],
       images: [],
       isPrivate: true,
@@ -54,6 +55,7 @@ describe('mergePortfolioProjects', () => {
       highlights: ['PID stabilization'],
       date: '2025-02-01T00:00:00Z',
       displayDate: 'Feb 2025',
+      categories: ['Software/Hardware'],
       techStack: ['C++'],
       images: [],
       source: 'custom',
@@ -74,6 +76,7 @@ describe('mergePortfolioProjects', () => {
       overrides: {
         'neural-api': {
           title: 'Neural API Studio',
+          categories: ['Web App', 'AI/ML'],
           liveUrl: 'https://demo.example.com',
           images: [{ src: 'projects/api.png', alt: 'Screenshot' }],
         },
@@ -83,6 +86,7 @@ describe('mergePortfolioProjects', () => {
 
     expect(merged).toHaveLength(3);
     expect(merged[0].title).toBe('Neural API Studio');
+    expect(merged[0].categories).toEqual(['Web App', 'AI/ML']);
     expect(merged[0].liveUrl).toBe('https://demo.example.com');
     expect(merged[0].images).toHaveLength(1);
     expect(merged[0].source).toBe('hybrid');

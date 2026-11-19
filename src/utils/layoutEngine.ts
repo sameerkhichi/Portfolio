@@ -156,18 +156,23 @@ export function computeSynapseEdges(nodes: PositionedProjectNode[]): SynapseEdge
     });
   }
 
-  // Secondary cross-synapses: connect nearby nodes sharing a tech stack tag
+  // Secondary cross-synapses: connect nearby nodes sharing a category or tech tag
   const maxSecondaryPerNode = 2;
   const secondaryCount = new Map<string, number>();
 
   for (let i = 0; i < nodes.length; i++) {
     const a = nodes[i];
-    const tagsA = new Set(a.project.techStack.map((t) => t.toLowerCase()));
+    const tagsA = new Set([
+      ...a.project.categories.map((c) => c.toLowerCase()),
+      ...a.project.techStack.map((t) => t.toLowerCase()),
+    ]);
     const candidates: Array<{ node: PositionedProjectNode; dist: number; tag: string }> = [];
 
     for (let j = i + 1; j < nodes.length; j++) {
       const b = nodes[j];
-      const shared = b.project.techStack.find((t) => tagsA.has(t.toLowerCase()));
+      const shared =
+        b.project.categories.find((c) => tagsA.has(c.toLowerCase())) ??
+        b.project.techStack.find((t) => tagsA.has(t.toLowerCase()));
       if (!shared) continue;
       const dist = Math.hypot(b.x - a.x, b.y - a.y);
       if (dist < 420) {

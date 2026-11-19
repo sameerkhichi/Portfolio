@@ -325,7 +325,7 @@ export function NeuralCanvas({
       if (filter) {
         const filterLower = filter.toLowerCase();
         for (const n of currentNodes) {
-          if (n.project.techStack.some((t) => t.toLowerCase() === filterLower)) {
+          if (n.project.categories.some((c) => c.toLowerCase() === filterLower)) {
             matchingNodeIds.add(n.project.id);
           }
         }

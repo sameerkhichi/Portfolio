@@ -98,6 +98,7 @@ async function main() {
         ],
         date: dateIso,
         displayDate: formatDisplayDate(dateIso),
+        categories: [],
         techStack: techStack.length ? techStack : ['Software'],
         githubUrl: isPrivate ? undefined : repo.html_url,
         liveUrl: repo.homepage || undefined,
