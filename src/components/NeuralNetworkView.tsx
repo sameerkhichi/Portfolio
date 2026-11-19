@@ -1,5 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  ChevronLeft,
+  ChevronRight,
   Maximize2,
   Minus,
   Plus,
@@ -69,6 +71,30 @@ export function NeuralNetworkView({
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<ProjectCategory | null>(null);
   const [revealedNodeIds, setRevealedNodeIds] = useState<Set<string>>(new Set());
+  const filterStripRef = useRef<HTMLDivElement | null>(null);
+  const [filterScrollState, setFilterScrollState] = useState({
+    canLeft: false,
+    canRight: false,
+  });
+
+  const updateFilterScrollState = useCallback(() => {
+    const strip = filterStripRef.current;
+    if (!strip) {
+      setFilterScrollState({ canLeft: false, canRight: false });
+      return;
+    }
+    const maxScroll = strip.scrollWidth - strip.clientWidth;
+    setFilterScrollState({
+      canLeft: strip.scrollLeft > 4,
+      canRight: maxScroll - strip.scrollLeft > 4,
+    });
+  }, []);
+
+  const scrollFilterStrip = useCallback((direction: -1 | 1) => {
+    const strip = filterStripRef.current;
+    if (!strip) return;
+    strip.scrollBy({ left: direction * 180, behavior: 'smooth' });
+  }, []);
 
   const initials = useMemo(() => {
     const parts = profile.name.trim().split(/\s+/);
@@ -90,6 +116,10 @@ export function NeuralNetworkView({
     activeFilter && visibleCategories.includes(activeFilter)
       ? activeFilter
       : null;
+
+  useEffect(() => {
+    updateFilterScrollState();
+  }, [visibleCategories, viewport.width, updateFilterScrollState]);
 
   const toScreen = (wx: number, wy: number) => ({
     x: viewport.width * 0.5 + (wx - camera.x) * camera.zoom,
@@ -256,34 +286,60 @@ export function NeuralNetworkView({
 
           <div className="hud-right-group">
             {visibleCategories.length > 0 && (
-              <div
-                className="filter-strip"
-                role="group"
-                aria-label="Filter projects by project type"
-              >
-                <button
-                  type="button"
-                  className={`filter-chip ${effectiveFilter === null ? 'is-active' : ''}`}
-                  onClick={() => {
-                    setActiveFilter(null);
-                    nanotechAudio.playNodeHover();
-                  }}
-                >
-                  All
-                </button>
-                {visibleCategories.map((category) => (
+              <div className="filter-strip-shell">
+                {filterScrollState.canLeft && (
                   <button
-                    key={category}
                     type="button"
-                    className={`filter-chip ${effectiveFilter === category ? 'is-active' : ''}`}
+                    className="filter-scroll-btn is-left"
+                    onClick={() => scrollFilterStrip(-1)}
+                    aria-label="Scroll categories left"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                )}
+
+                <div
+                  ref={filterStripRef}
+                  className="filter-strip"
+                  role="group"
+                  aria-label="Filter projects by project type"
+                  onScroll={updateFilterScrollState}
+                >
+                  <button
+                    type="button"
+                    className={`filter-chip ${effectiveFilter === null ? 'is-active' : ''}`}
                     onClick={() => {
-                      setActiveFilter(effectiveFilter === category ? null : category);
+                      setActiveFilter(null);
                       nanotechAudio.playNodeHover();
                     }}
                   >
-                    {category}
+                    All
                   </button>
-                ))}
+                  {visibleCategories.map((category) => (
+                    <button
+                      key={category}
+                      type="button"
+                      className={`filter-chip ${effectiveFilter === category ? 'is-active' : ''}`}
+                      onClick={() => {
+                        setActiveFilter(effectiveFilter === category ? null : category);
+                        nanotechAudio.playNodeHover();
+                      }}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+
+                {filterScrollState.canRight && (
+                  <button
+                    type="button"
+                    className="filter-scroll-btn is-right"
+                    onClick={() => scrollFilterStrip(1)}
+                    aria-label="Scroll categories right"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                )}
               </div>
             )}
 

@@ -416,6 +416,13 @@ button {
   pointer-events: auto;
 }
 
+.filter-strip-shell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  max-width: min(720px, 68vw);
+}
+
 .filter-strip {
   display: flex;
   align-items: center;
@@ -425,13 +432,82 @@ button {
   background: var(--bg-glass);
   border: 1px solid rgba(0, 240, 255, 0.22);
   backdrop-filter: blur(14px);
-  max-width: min(720px, 68vw);
+  max-width: 100%;
   overflow-x: auto;
   scrollbar-width: none;
 }
 
 .filter-strip::-webkit-scrollbar {
   display: none;
+}
+
+.filter-scroll-btn {
+  display: none;
+}
+
+/* Desktop-only scroll affordance & subtle scrollbar (leaves mobile unchanged) */
+@media (hover: hover) and (pointer: fine) {
+  .filter-strip-shell {
+    max-width: min(680px, max(260px, calc(100vw - 440px)));
+  }
+
+  .filter-strip {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .filter-strip:hover {
+    scrollbar-color: rgba(0, 240, 255, 0.42) transparent;
+  }
+
+  .filter-strip::-webkit-scrollbar {
+    display: block;
+    height: 3px;
+  }
+
+  .filter-strip::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .filter-strip::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: var(--radius-pill);
+  }
+
+  .filter-strip:hover::-webkit-scrollbar-thumb {
+    background: rgba(0, 240, 255, 0.42);
+  }
+
+  .filter-scroll-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(5, 13, 25, 0.94);
+    border: 1px solid rgba(0, 240, 255, 0.42);
+    color: var(--aqua-core);
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.65);
+    transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .filter-scroll-btn:hover {
+    border-color: var(--aqua-bright);
+    background: rgba(0, 240, 255, 0.18);
+  }
+
+  .filter-scroll-btn.is-left {
+    left: 4px;
+  }
+
+  .filter-scroll-btn.is-right {
+    right: 4px;
+  }
 }
 
 .filter-chip {

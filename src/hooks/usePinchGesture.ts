@@ -89,7 +89,22 @@ export function usePinchGesture({
         return;
       }
 
-      // NETWORK or NODE_PREVIEW: zoom cleanly around cursor
+      // NETWORK or NODE_PREVIEW: allow scrolling inside HUD filter strip or overview panel
+      const targetEl = e.target as HTMLElement | null;
+      const filterStrip = targetEl?.closest('.filter-strip') as HTMLElement | null;
+      if (filterStrip && !e.ctrlKey) {
+        e.preventDefault();
+        const delta =
+          Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+        filterStrip.scrollLeft += delta;
+        return;
+      }
+
+      if (targetEl?.closest('.overview-panel') && !e.ctrlKey) {
+        return;
+      }
+
+      // Zoom neural network cleanly around cursor
       e.preventDefault();
       const intensity = e.ctrlKey ? 0.011 : 0.0018;
       const clampedDelta = Math.max(-120, Math.min(120, e.deltaY));
