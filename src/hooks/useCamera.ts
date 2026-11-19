@@ -23,7 +23,12 @@ export function useCamera(initialZoom = ABOUT_CORE_ZOOM) {
 
   useEffect(() => {
     let rafId = 0;
-    const tick = () => {
+    let lastTime = performance.now();
+
+    const tick = (now: number) => {
+      const dt = Math.min(0.05, Math.max(0.001, (now - lastTime) / 1000));
+      lastTime = now;
+
       const cur = currentRef.current;
       const tgt = targetRef.current;
 
@@ -31,11 +36,12 @@ export function useCamera(initialZoom = ABOUT_CORE_ZOOM) {
       const dy = tgt.y - cur.y;
       const dz = tgt.zoom - cur.zoom;
 
-      const lerpFactor = 0.12;
-      if (Math.abs(dx) > 0.08 || Math.abs(dy) > 0.08 || Math.abs(dz) > 0.0008) {
-        const stepX = dx * lerpFactor;
-        const stepY = dy * lerpFactor;
-        const stepZ = dz * lerpFactor;
+      // Frame-rate independent exponential smoothing (silky across 60Hz/90Hz/120Hz mobile displays)
+      const alpha = 1 - Math.exp(-10 * dt);
+      if (Math.abs(dx) > 0.12 || Math.abs(dy) > 0.12 || Math.abs(dz) > 0.001) {
+        const stepX = dx * alpha;
+        const stepY = dy * alpha;
+        const stepZ = dz * alpha;
 
         cur.x += stepX;
         cur.y += stepY;
@@ -44,6 +50,12 @@ export function useCamera(initialZoom = ABOUT_CORE_ZOOM) {
 
         setCamera({ x: cur.x, y: cur.y, zoom: cur.zoom });
       } else {
+        if (cur.x !== tgt.x || cur.y !== tgt.y || cur.zoom !== tgt.zoom) {
+          cur.x = tgt.x;
+          cur.y = tgt.y;
+          cur.zoom = tgt.zoom;
+          setCamera({ x: cur.x, y: cur.y, zoom: cur.zoom });
+        }
         velocityRef.current *= 0.82;
       }
 

@@ -185,8 +185,9 @@ button {
   justify-content: center;
   gap: 2px;
   animation: pulseCore 3.8s ease-in-out infinite;
-  transition: border-color 0.25s ease, transform 0.25s var(--ease-tech), opacity 0.35s ease;
+  transition: border-color 0.25s ease, opacity 0.35s ease;
   will-change: transform;
+  backface-visibility: hidden;
   z-index: 8;
 }
 
