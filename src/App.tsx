@@ -99,13 +99,22 @@ export function App() {
     };
   }, []);
 
-  // Track window viewport resize
+  // Track window viewport resize & clear cursor hex lens when mouse leaves window
   useEffect(() => {
     const onResize = () => {
       setViewport({ width: window.innerWidth, height: window.innerHeight });
     };
+    const onPointerLeave = () => {
+      pointerScreenRef.current.active = false;
+    };
     window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+    document.addEventListener('mouseleave', onPointerLeave);
+    window.addEventListener('blur', onPointerLeave);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      document.removeEventListener('mouseleave', onPointerLeave);
+      window.removeEventListener('blur', onPointerLeave);
+    };
   }, []);
 
   // Unlock Web Audio API in capture phase (BEFORE React button handlers) & keep alive on resume

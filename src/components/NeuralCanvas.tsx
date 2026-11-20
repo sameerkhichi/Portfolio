@@ -109,6 +109,7 @@ export function NeuralCanvas({
   const edgeStatesRef = useRef<Map<string, EdgeAnimState>>(new Map());
   const generationStartRef = useRef<number>(performance.now());
   const revealedSetRef = useRef<Set<string>>(new Set());
+  const hexLensRef = useRef({ x: 0, y: 0, alpha: 0, initialized: false });
 
   // Keep latest props accessible inside RAF loop without restarting canvas
   const propsRef = useRef({
@@ -263,6 +264,159 @@ export function NeuralCanvas({
       bgGlow.addColorStop(1, 'rgba(4, 8, 15, 0)');
       ctx.fillStyle = bgGlow;
       ctx.fillRect(0, 0, width, height);
+
+      // 0. Interactive 3D-Bulging Hex / Constellation Cursor Lens (Node View only)
+      const lens = hexLensRef.current;
+      const lensTargetAlpha =
+        pointer.active && (mode === 'NETWORK' || mode === 'NODE_PREVIEW')
+          ? 1
+          : 0;
+
+      if (pointer.active && !lens.initialized) {
+        lens.x = pointer.x;
+        lens.y = pointer.y;
+        lens.initialized = true;
+      } else if (pointer.active) {
+        const follow = 1 - Math.exp(-18 * dt);
+        lens.x += (pointer.x - lens.x) * follow;
+        lens.y += (pointer.y - lens.y) * follow;
+      }
+      lens.alpha += (lensTargetAlpha - lens.alpha) * (1 - Math.exp(-9 * dt));
+
+      if (lens.alpha > 0.015) {
+        const lensRadius = 215;
+        const hexR = 22;
+        const colStep = Math.sqrt(3) * hexR;
+        const rowStep = 1.5 * hexR;
+
+        // Soft holographic spotlight beneath the bulging dome
+        const domeGlow = ctx.createRadialGradient(
+          lens.x,
+          lens.y,
+          0,
+          lens.x,
+          lens.y,
+          lensRadius
+        );
+        domeGlow.addColorStop(0, `rgba(${accentRgb}, ${0.095 * lens.alpha})`);
+        domeGlow.addColorStop(0.48, `rgba(${secondaryRgb}, ${0.035 * lens.alpha})`);
+        domeGlow.addColorStop(1, `rgba(${accentRgb}, 0)`);
+        ctx.fillStyle = domeGlow;
+        ctx.beginPath();
+        ctx.arc(lens.x, lens.y, lensRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        const warpPoint = (px: number, py: number) => {
+          const dx = px - lens.x;
+          const dy = py - lens.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist >= lensRadius) {
+            return { x: px, y: py, f: 0 };
+          }
+          const u = 1 - dist / lensRadius;
+          const f = u * u * (3 - 2 * u); // Smooth cubic dome falloff
+          if (dist < 0.001) {
+            return { x: px, y: py, f };
+          }
+          // Outward spherical perspective bulge toward viewer
+          const bulge = Math.sin(u * Math.PI * 0.92) * 19 * lens.alpha;
+          const invDist = 1 / dist;
+          return {
+            x: px + dx * invDist * bulge,
+            y: py + dy * invDist * bulge,
+            f,
+          };
+        };
+
+        // Anchor lattice to world camera origin so panning slides the hex grid naturally
+        const minRow = Math.floor((lens.y - lensRadius - coreScreenY) / rowStep) - 1;
+        const maxRow = Math.ceil((lens.y + lensRadius - coreScreenY) / rowStep) + 1;
+        const drawnVertices = new Set<string>();
+
+        ctx.save();
+        for (let row = minRow; row <= maxRow; row++) {
+          const rowOffsetX = (row & 1) !== 0 ? colStep * 0.5 : 0;
+          const cy = coreScreenY + row * rowStep;
+          const minCol =
+            Math.floor((lens.x - lensRadius - coreScreenX - rowOffsetX) / colStep) - 1;
+          const maxCol =
+            Math.ceil((lens.x + lensRadius - coreScreenX - rowOffsetX) / colStep) + 1;
+
+          for (let col = minCol; col <= maxCol; col++) {
+            const cx = coreScreenX + col * colStep + rowOffsetX;
+            const centerDist = Math.hypot(cx - lens.x, cy - lens.y);
+            if (centerDist > lensRadius + hexR) continue;
+
+            const warpedCenter = warpPoint(cx, cy);
+            const cellAlpha = warpedCenter.f * lens.alpha;
+            if (cellAlpha <= 0.015) continue;
+
+            // Compute 6 pointy-top hex vertices with spherical bulge warp
+            const verts: Array<{ x: number; y: number; f: number; key: string }> = [];
+            for (let k = 0; k < 6; k++) {
+              const ang = (Math.PI / 3) * k - Math.PI / 6;
+              const vx = cx + Math.cos(ang) * hexR;
+              const vy = cy + Math.sin(ang) * hexR;
+              const wv = warpPoint(vx, vy);
+              verts.push({
+                ...wv,
+                key: `${Math.round(vx * 0.5)}:${Math.round(vy * 0.5)}`,
+              });
+            }
+
+            // Hex perimeter edges
+            ctx.beginPath();
+            ctx.moveTo(verts[0].x, verts[0].y);
+            for (let k = 1; k < 6; k++) {
+              ctx.lineTo(verts[k].x, verts[k].y);
+            }
+            ctx.closePath();
+            ctx.strokeStyle = `rgba(${accentRgb}, ${cellAlpha * 0.34})`;
+            ctx.lineWidth = 0.65 + cellAlpha * 0.85;
+            ctx.stroke();
+
+            // Inner constellation triangulation spokes near the dome peak
+            if (cellAlpha > 0.16) {
+              ctx.beginPath();
+              for (let k = 0; k < 6; k += 2) {
+                ctx.moveTo(warpedCenter.x, warpedCenter.y);
+                ctx.lineTo(verts[k].x, verts[k].y);
+              }
+              ctx.strokeStyle = `rgba(${secondaryRgb}, ${cellAlpha * 0.2})`;
+              ctx.lineWidth = 0.6;
+              ctx.stroke();
+
+              // Center constellation star dot
+              ctx.beginPath();
+              ctx.arc(
+                warpedCenter.x,
+                warpedCenter.y,
+                0.8 + cellAlpha * 1.15,
+                0,
+                Math.PI * 2
+              );
+              ctx.fillStyle = `rgba(${softRgb}, ${cellAlpha * 0.58})`;
+              ctx.fill();
+            }
+
+            // Glowing constellation dots at hex vertices (deduped so shared corners stay clean)
+            for (const v of verts) {
+              if (v.f <= 0.04 || drawnVertices.has(v.key)) continue;
+              drawnVertices.add(v.key);
+              const va = v.f * lens.alpha;
+              const dotR = 0.85 + va * 1.55;
+              ctx.beginPath();
+              ctx.arc(v.x, v.y, dotR, 0, Math.PI * 2);
+              ctx.fillStyle =
+                va > 0.68
+                  ? `rgba(255, 255, 255, ${va * 0.85})`
+                  : `rgba(${softRgb}, ${va * 0.72})`;
+              ctx.fill();
+            }
+          }
+        }
+        ctx.restore();
+      }
 
       // Convert pointer screen coords to world coords for dynamic nanotech weave
       const pointerWorldX = cam.x + (pointer.x - width * 0.5) / cam.zoom;

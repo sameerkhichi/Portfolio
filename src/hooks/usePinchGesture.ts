@@ -155,7 +155,9 @@ export function usePinchGesture({
     };
 
     const handlePointerMove = (e: PointerEvent) => {
-      onPointerMoveScreen?.(e.clientX, e.clientY);
+      if (e.pointerType !== 'touch') {
+        onPointerMoveScreen?.(e.clientX, e.clientY);
+      }
 
       if (pointersRef.current.has(e.pointerId)) {
         pointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
