@@ -649,7 +649,7 @@ button {
   right: 24px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   pointer-events: none;
   z-index: 2;
 }
@@ -1147,7 +1147,7 @@ button {
 }
 
 .gallery-cycle-fill.is-running {
-  animation: autoCycleBar 20s linear forwards;
+  animation: autoCycleBar 10s linear forwards;
 }
 
 .gallery-cycle-fill.is-paused {

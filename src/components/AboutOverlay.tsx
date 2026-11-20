@@ -51,11 +51,6 @@ export function AboutOverlay({
       aria-label="About Me"
     >
       <div className="about-top-bar">
-        <div className="about-telemetry">
-          <span className="hud-status-dot" />
-          <span>CORE NODE // 00</span>
-        </div>
-
         <div className="about-top-actions">
           <div className="theme-trigger-wrap">
             <button

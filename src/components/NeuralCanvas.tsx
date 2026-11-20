@@ -284,8 +284,8 @@ export function NeuralCanvas({
       lens.alpha += (lensTargetAlpha - lens.alpha) * (1 - Math.exp(-9 * dt));
 
       if (lens.alpha > 0.015) {
-        const lensRadius = 215;
-        const hexR = 22;
+        const lensRadius = 115;
+        const hexR = 13;
         const colStep = Math.sqrt(3) * hexR;
         const rowStep = 1.5 * hexR;
 
@@ -298,8 +298,8 @@ export function NeuralCanvas({
           lens.y,
           lensRadius
         );
-        domeGlow.addColorStop(0, `rgba(${accentRgb}, ${0.095 * lens.alpha})`);
-        domeGlow.addColorStop(0.48, `rgba(${secondaryRgb}, ${0.035 * lens.alpha})`);
+        domeGlow.addColorStop(0, `rgba(${accentRgb}, ${0.11 * lens.alpha})`);
+        domeGlow.addColorStop(0.5, `rgba(${secondaryRgb}, ${0.04 * lens.alpha})`);
         domeGlow.addColorStop(1, `rgba(${accentRgb}, 0)`);
         ctx.fillStyle = domeGlow;
         ctx.beginPath();
@@ -319,7 +319,7 @@ export function NeuralCanvas({
             return { x: px, y: py, f };
           }
           // Outward spherical perspective bulge toward viewer
-          const bulge = Math.sin(u * Math.PI * 0.92) * 19 * lens.alpha;
+          const bulge = Math.sin(u * Math.PI * 0.92) * 12 * lens.alpha;
           const invDist = 1 / dist;
           return {
             x: px + dx * invDist * bulge,
@@ -371,8 +371,8 @@ export function NeuralCanvas({
               ctx.lineTo(verts[k].x, verts[k].y);
             }
             ctx.closePath();
-            ctx.strokeStyle = `rgba(${accentRgb}, ${cellAlpha * 0.34})`;
-            ctx.lineWidth = 0.65 + cellAlpha * 0.85;
+            ctx.strokeStyle = `rgba(${accentRgb}, ${cellAlpha * 0.38})`;
+            ctx.lineWidth = 0.55 + cellAlpha * 0.7;
             ctx.stroke();
 
             // Inner constellation triangulation spokes near the dome peak
@@ -382,8 +382,8 @@ export function NeuralCanvas({
                 ctx.moveTo(warpedCenter.x, warpedCenter.y);
                 ctx.lineTo(verts[k].x, verts[k].y);
               }
-              ctx.strokeStyle = `rgba(${secondaryRgb}, ${cellAlpha * 0.2})`;
-              ctx.lineWidth = 0.6;
+              ctx.strokeStyle = `rgba(${secondaryRgb}, ${cellAlpha * 0.22})`;
+              ctx.lineWidth = 0.5;
               ctx.stroke();
 
               // Center constellation star dot
@@ -391,11 +391,11 @@ export function NeuralCanvas({
               ctx.arc(
                 warpedCenter.x,
                 warpedCenter.y,
-                0.8 + cellAlpha * 1.15,
+                0.6 + cellAlpha * 0.9,
                 0,
                 Math.PI * 2
               );
-              ctx.fillStyle = `rgba(${softRgb}, ${cellAlpha * 0.58})`;
+              ctx.fillStyle = `rgba(${softRgb}, ${cellAlpha * 0.62})`;
               ctx.fill();
             }
 
@@ -404,7 +404,7 @@ export function NeuralCanvas({
               if (v.f <= 0.04 || drawnVertices.has(v.key)) continue;
               drawnVertices.add(v.key);
               const va = v.f * lens.alpha;
-              const dotR = 0.85 + va * 1.55;
+              const dotR = 0.65 + va * 1.15;
               ctx.beginPath();
               ctx.arc(v.x, v.y, dotR, 0, Math.PI * 2);
               ctx.fillStyle =

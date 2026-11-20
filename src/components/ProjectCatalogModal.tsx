@@ -17,7 +17,7 @@ import type { PositionedProjectNode } from '../types/portfolio';
 import { nanotechAudio } from '../utils/nanotechAudio';
 import { triggerHaptic } from '../utils/haptics';
 
-const AUTO_CYCLE_MS = 20000;
+const AUTO_CYCLE_MS = 10000;
 
 interface ProjectCatalogModalProps {
   node: PositionedProjectNode;
@@ -217,7 +217,11 @@ export function ProjectCatalogModal({
               ) : (
                 <div className="blueprint-placeholder">
                   <div className="blueprint-header">
-                    <span>NODE SCHEMATIC // {project.id.toUpperCase()}</span>
+                    <span>
+                      {project.source === 'custom'
+                        ? 'Custom'
+                        : 'Autosynced from GitHub'}
+                    </span>
                     <span>{project.displayDate}</span>
                   </div>
 
