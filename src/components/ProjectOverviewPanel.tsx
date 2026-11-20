@@ -227,7 +227,9 @@ export function ProjectOverviewPanel({
               onMouseEnter={() => nanotechAudio.playNodeHover()}
             >
               <ExternalLink size={15} color="var(--aqua-core)" />
-              <span>Live Demo</span>
+              <span>
+                {project.liveUrl.includes('apps.apple.com') ? 'App Store' : 'Live Demo'}
+              </span>
             </a>
           )}
         </div>
