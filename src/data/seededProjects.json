@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-11-19T00:45:15.938Z",
+  "syncedAt": "2026-11-20T02:42:38.952Z",
   "profile": {
     "name": "Sameer Khichi",
     "handle": "sameerkhichi",
@@ -9,6 +9,30 @@
     "location": "Hamilton"
   },
   "projects": [
+    {
+      "id": "gh-portfolio",
+      "repoName": "Portfolio",
+      "title": "Portfolio",
+      "shortDescription": "TypeScript software project engineered by Sameer Khichi.",
+      "fullSummary": "Repository \"Portfolio\" created on GitHub using TypeScript.",
+      "highlights": [
+        "Primary technologies: TypeScript",
+        "Last active: Nov 2026",
+        "Open-source repository on GitHub"
+      ],
+      "date": "2026-11-19T07:00:54Z",
+      "displayDate": "Nov 2026",
+      "categories": [],
+      "techStack": [
+        "TypeScript"
+      ],
+      "githubUrl": "https://github.com/sameerkhichi/Portfolio",
+      "images": [],
+      "stars": 0,
+      "fork": false,
+      "isPrivate": false,
+      "source": "github"
+    },
     {
       "id": "gh-leetcode-library",
       "repoName": "leetcode-library",
@@ -22,6 +46,7 @@
       ],
       "date": "2026-11-18T21:05:49Z",
       "displayDate": "Nov 2026",
+      "categories": [],
       "techStack": [
         "Python"
       ],
@@ -45,6 +70,7 @@
       ],
       "date": "2026-11-12T06:00:50Z",
       "displayDate": "Nov 2026",
+      "categories": [],
       "techStack": [
         "TypeScript"
       ],
@@ -68,6 +94,7 @@
       ],
       "date": "2026-10-30T05:16:42Z",
       "displayDate": "Oct 2026",
+      "categories": [],
       "techStack": [
         "HTML"
       ],
@@ -92,6 +119,7 @@
       ],
       "date": "2026-10-29T15:33:25Z",
       "displayDate": "Oct 2026",
+      "categories": [],
       "techStack": [
         "Software"
       ],
@@ -115,6 +143,7 @@
       ],
       "date": "2025-09-06T22:03:16Z",
       "displayDate": "Sep 2025",
+      "categories": [],
       "techStack": [
         "Python"
       ],
@@ -139,6 +168,7 @@
       ],
       "date": "2025-08-01T01:49:44Z",
       "displayDate": "Jul 2025",
+      "categories": [],
       "techStack": [
         "Python"
       ],
@@ -163,6 +193,7 @@
       ],
       "date": "2025-04-03T03:40:38Z",
       "displayDate": "Apr 2025",
+      "categories": [],
       "techStack": [
         "Java"
       ],
@@ -186,6 +217,7 @@
       ],
       "date": "2025-03-25T03:57:20Z",
       "displayDate": "Mar 2025",
+      "categories": [],
       "techStack": [
         "Java"
       ],
@@ -209,6 +241,7 @@
       ],
       "date": "2025-03-01T03:32:21Z",
       "displayDate": "Feb 2025",
+      "categories": [],
       "techStack": [
         "Python"
       ],
@@ -232,6 +265,7 @@
       ],
       "date": "2025-02-01T23:06:44Z",
       "displayDate": "Feb 2025",
+      "categories": [],
       "techStack": [
         "Java"
       ],
@@ -255,6 +289,7 @@
       ],
       "date": "2025-01-19T05:33:36Z",
       "displayDate": "Jan 2025",
+      "categories": [],
       "techStack": [
         "Python"
       ],
@@ -278,6 +313,7 @@
       ],
       "date": "2025-01-16T23:35:39Z",
       "displayDate": "Jan 2025",
+      "categories": [],
       "techStack": [
         "Python"
       ],
@@ -301,6 +337,7 @@
       ],
       "date": "2025-01-03T03:32:42Z",
       "displayDate": "Jan 2025",
+      "categories": [],
       "techStack": [
         "Python"
       ],
@@ -324,6 +361,7 @@
       ],
       "date": "2024-12-19T18:55:44Z",
       "displayDate": "Dec 2024",
+      "categories": [],
       "techStack": [
         "Java"
       ],
@@ -347,6 +385,7 @@
       ],
       "date": "2024-12-16T20:14:44Z",
       "displayDate": "Dec 2024",
+      "categories": [],
       "techStack": [
         "Java"
       ],

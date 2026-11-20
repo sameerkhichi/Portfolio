@@ -1,0 +1,24 @@
+{
+  "id": "gh-blescraper",
+  "repoName": "BLEScraper",
+  "title": "BLEScraper",
+  "shortDescription": "mobile app to scrape and collect data sent over unencrypted GATT bluetooth low energy packets from a BLE device. Reverse engineered protocols decode the data. This app then allows sending that data to an IP, server or any endpoint for data proccessing. ",
+  "fullSummary": "mobile app to scrape and collect data sent over unencrypted GATT bluetooth low energy packets from a BLE device. Reverse engineered protocols decode the data. This app then allows sending that data to an IP, server or any endpoint for data proccessing. ",
+  "highlights": [
+    "Primary technologies: TypeScript",
+    "Last active: Nov 2026",
+    "Open-source repository on GitHub"
+  ],
+  "date": "2026-11-12T06:00:50Z",
+  "displayDate": "Nov 2026",
+  "categories": [],
+  "techStack": [
+    "TypeScript"
+  ],
+  "githubUrl": "https://github.com/sameerkhichi/BLEScraper",
+  "images": [],
+  "stars": 0,
+  "fork": false,
+  "isPrivate": false,
+  "source": "github"
+}

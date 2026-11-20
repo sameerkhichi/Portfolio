@@ -1,0 +1,24 @@
+{
+  "id": "gh-ai_checklist",
+  "repoName": "AI_Checklist",
+  "title": "AI Checklist",
+  "shortDescription": "This is structured to be a to-do list but also powered by an AI model to automatically generate useful tasks to complete. Soon to be published on AWS",
+  "fullSummary": "This is structured to be a to-do list but also powered by an AI model to automatically generate useful tasks to complete. Soon to be published on AWS",
+  "highlights": [
+    "Primary technologies: Python",
+    "Last active: Jan 2025",
+    "Open-source repository on GitHub"
+  ],
+  "date": "2025-01-19T05:33:36Z",
+  "displayDate": "Jan 2025",
+  "categories": [],
+  "techStack": [
+    "Python"
+  ],
+  "githubUrl": "https://github.com/sameerkhichi/AI_Checklist",
+  "images": [],
+  "stars": 0,
+  "fork": false,
+  "isPrivate": false,
+  "source": "github"
+}

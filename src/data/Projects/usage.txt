@@ -1,0 +1,194 @@
+================================================================================
+  PROJECTS — Notes for scalable usage.
+================================================================================
+
+Every project node on the portfolio lives in its own modular folder inside:
+  src/data/Projects/<Project Name>/
+
+There are two kinds of project folders — both share the same folder layout
+
+  src/data/Projects/
+  	usage.txt                       
+  
+  	Project1/                         <-- Custom / Private Project
+  	   project.json                 <-- project file and metadata
+  	   screenshots/                 <-- Optional local photos 
+  	      01-garage.png
+  	      02-3d-history.png
+  
+  	Project2/                        <-- Auto-Synced Public GitHub Repo
+           github.json                  <-- Machine-owned (auto-updated by sync)
+           override.json                <-- manual edits that override (not overriten)
+      	   screenshots/                 <-- Optional local photos 
+              01-scanner.png
+
+
+--------------------------------------------------------------------------------
+1. HOW TO ADD A NEW CUSTOM / PRIVATE PROJECT
+--------------------------------------------------------------------------------
+1. Create a new folder inside src/data/Projects/ named whatever you want the
+   project to be called (the folder name automatically becomes the node title
+   unless you set "title" inside project.json).
+2. Add a project.json file inside that folder.
+3. Optionally create a screenshots/ subfolder and drop images into it.
+
+The new node appears automatically 
+
+
+--------------------------------------------------------------------------------
+2. HOW AUTO-SYNCED GITHUB REPOS & override.json WORK
+--------------------------------------------------------------------------------
+When you run:
+  npm run sync:github on cmd (or npm.cmd run sync:github in PowerShell)
+
+The sync script fetches GitHub repositories and for each visible repo:
+  - Creates src/data/Projects/<RepoName>/ if it doesn't exist yet.
+  - Writes/updates github.json with fresh GitHub metadata (push date,
+    description, language, topics, stars, repo URL, homepage).
+  - Creates a clean starter override.json ONLY if one does not already exist.
+  - Avoids overwrites an existing override.json or anything in screenshots/.
+
+How overrides merge at runtime:
+  github.json -> live GitHub API -> override.json - thats so it doesnt get overwritten
+
+Any field you put inside override.json replaces the auto-pulled GitHub value
+for that project (for example: categories, a better title, a longer
+fullSummary, custom highlights, techStack, liveUrl, or "hidden": true).
+Leaving out a field ensures it gets autosynced by github.
+
+
+--------------------------------------------------------------------------------
+3. MANDATORY FIELDS IN project.json (Custom Projects)
+--------------------------------------------------------------------------------
+Every custom project's project.json should include these 4 fields:
+
+  - "shortDescription" (string)
+      1-2 sentence overview displayed in the 1st-click half-opened card.
+
+  - "date" (ISO date string, e.g. "2026-11-19" or "2026-11-19T00:00:00Z")
+      Controls which Year Ring the node sits in AND its radial position within
+      that year based on month/day.
+
+  - "categories" (array of strings)
+      Classifies the project for the top category switcher.
+      Allowed values:
+        "Web App"
+        "AI/ML"
+        "Cybersecurity"
+        "Software/Hardware"
+        "Mobile Dev"
+        "Video Game Dev"
+        "Systems & Tools"
+        "Cloud & DevOps"
+        "Data Science"
+      (Any category with 0 tagged projects stays automatically hidden.)
+
+  - "techStack" (array of strings)
+      Technologies shown as badges in the overview card and full catalog
+      (e.g. ["Swift", "SwiftUI", "WidgetKit"]).
+
+Note: In override.json for a GitHub repo, ALL fields are optional — only
+include the specific fields you want to add or override!
+
+
+--------------------------------------------------------------------------------
+4. OPTIONAL FIELDS (project.json and override.json)
+--------------------------------------------------------------------------------
+  - "title" (string)
+      Overrides the folder / repo name as the displayed project title.
+
+  - "fullSummary" (string)
+      Longer description shown in the 2nd-click Full Catalog view.
+      (Defaults to `shortDescription` if omitted.)
+
+  - "highlights" (array of strings)
+      Bullet points shown under "Key Highlights" in the Full Catalog view.
+
+  - "displayDate" (string, e.g. "Nov 2026")
+      Custom formatted date label. (Auto-formatted from `date` if omitted.)
+
+  - "liveUrl" (string)
+      External link (live website, demo, or App Store link).
+      Note: Any `apps.apple.com` link is automatically labeled "App Store".
+
+  - "githubUrl" (string)
+      Link to a public GitHub repo if applicable. Omit for private repos.
+
+  - "isPrivate" (boolean, default: false)
+      Set to `true` to show the amber "Private Repo" badge.
+
+  - "featured" (boolean, default: false)
+      Set to `true` to highlight a project (or include a forked GitHub repo).
+
+  - "hidden" (boolean, default: false)
+      Set to `true` to hide this project node without deleting its folder.
+
+  - "images" (array of { "src": "...", "alt": "...", "caption": "..." })
+      Optional external image URLs (such as App Store CDN URLs).
+
+
+--------------------------------------------------------------------------------
+5. HOW SCREENSHOTS / PHOTOS WORK (Works for BOTH Custom & GitHub Projects!)
+--------------------------------------------------------------------------------
+Option A — Local screenshots/ folder:
+  1. Create a screenshots folder inside any project folder:
+       src/data/Projects/<Project Name>/screenshots/
+  2. Drop any image files inside it:
+       Supported formats: .png, .jpg, .jpeg, .webp, .gif, .avif
+  3. Number filenames to control their exact order in the gallery:
+       01-home-screen.png
+       02-dashboard.jpg
+       03-settings.webp
+  4. Filenames are automatically turned into clean captions (leading numbers,
+     dashes, and underscores are stripped: 01-home-screen.png ->
+     Home Screen).
+  5. Vite automatically bundles and rewrites the image paths for GitHub Pages
+     (`/Portfolio/`), so you never need to configure image URLs manually.
+
+Option B — External URLs in project.json or override.json:
+  Add an "images" array with full `https://...` URLs.
+  If a project has BOTH local `screenshots/` files AND `"images"` URLs,
+  local screenshots appear first, followed by the external URLs.
+
+If a project has no screenshots yet, the Full Catalog view automatically
+displays a sleek neural schematic blueprint card as a placeholder.
+
+
+--------------------------------------------------------------------------------
+6. COPY-PASTE TEMPLATES
+--------------------------------------------------------------------------------
+A) Custom / Private Project (src/data/Projects/<Project Name>/project.json):
+{
+  "shortDescription": "Concise 1-2 sentence overview for the 1st-click card.",
+  "fullSummary": "Detailed write-up of what the project does, architecture, and impact.",
+  "highlights": [
+    "Key technical achievement or feature #1",
+    "Key technical achievement or feature #2"
+  ],
+  "date": "2026-11-19",
+  "categories": ["Web App", "Systems & Tools"],
+  "techStack": ["TypeScript", "React"],
+  "liveUrl": "https://example.com",
+  "isPrivate": true
+}
+
+B) GitHub Repo Override (src/data/Projects/<RepoName>/override.json):
+{
+  "categories": ["Web App", "AI/ML"],
+  "shortDescription": "Optional custom 1-liner replacing the GitHub description.",
+  "fullSummary": "Optional deeper catalog story.",
+  "highlights": [
+    "Highlight #1",
+    "Highlight #2"
+  ]
+}
+
+
+--------------------------------------------------------------------------------
+7. HIDING REPOS & PUBLISHING
+--------------------------------------------------------------------------------
+- To hide a GitHub repo globally so it is never scaffolded or shown, add its
+  repo name to `HIDDEN_REPOS` in src/data/portfolioConfig.ts (or set
+  "hidden": true inside its override.json).
+- Commit & push to main — GitHub Actions automatically rebuilds and publishes
+  your updated portfolio to GitHub Pages.

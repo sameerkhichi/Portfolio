@@ -1,0 +1,25 @@
+{
+  "id": "gh-facial_recognition_model",
+  "repoName": "Facial_Recognition_Model",
+  "title": "Facial Recognition Model",
+  "shortDescription": "This is a facial recognition model built using tensorflow leveraging a siamese neural network.",
+  "fullSummary": "This is a facial recognition model built using tensorflow leveraging a siamese neural network.",
+  "highlights": [
+    "Primary technologies: Python",
+    "Last active: Sep 2025",
+    "Open-source repository on GitHub"
+  ],
+  "date": "2025-09-06T22:03:16Z",
+  "displayDate": "Sep 2025",
+  "categories": [],
+  "techStack": [
+    "Python"
+  ],
+  "githubUrl": "https://github.com/sameerkhichi/Facial_Recognition_Model",
+  "liveUrl": "https://github.com/sameerkhichi/Facial_Recognition_Model/releases/tag/v1.0.0",
+  "images": [],
+  "stars": 0,
+  "fork": false,
+  "isPrivate": false,
+  "source": "github"
+}

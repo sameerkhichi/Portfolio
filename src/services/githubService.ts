@@ -5,6 +5,7 @@ import {
   GITHUB_USERNAME,
   HIDDEN_REPOS,
   LINKEDIN_URL,
+  MODULAR_GITHUB_PROJECTS,
   PROJECT_OVERRIDES,
 } from '../data/portfolioConfig';
 import type {
@@ -133,6 +134,11 @@ function normalizeGitHubRepo(repo: GitHubRepoResponse): ProjectItem {
   };
 }
 
+const defaultSeededProjects: SeededProjectItem[] =
+  MODULAR_GITHUB_PROJECTS.length > 0
+    ? MODULAR_GITHUB_PROJECTS
+    : seededSnapshot.projects;
+
 export function mergePortfolioProjects(params: {
   liveRepos?: GitHubRepoResponse[];
   seededProjects?: SeededProjectItem[];
@@ -142,7 +148,7 @@ export function mergePortfolioProjects(params: {
 }): ProjectItem[] {
   const {
     liveRepos = [],
-    seededProjects = seededSnapshot.projects,
+    seededProjects = defaultSeededProjects,
     overrides = PROJECT_OVERRIDES,
     customProjects = CUSTOM_PROJECTS,
     hiddenRepos = HIDDEN_REPOS,
@@ -229,7 +235,7 @@ export function getSeededPortfolioData(): PortfolioDataResult {
 
   const projects = mergePortfolioProjects({
     liveRepos: [],
-    seededProjects: seededSnapshot.projects,
+    seededProjects: defaultSeededProjects,
   });
 
   return { profile, projects, source: 'seeded' };
@@ -311,7 +317,7 @@ export async function fetchPortfolioData(
 
     const projects = mergePortfolioProjects({
       liveRepos: repos,
-      seededProjects: seededSnapshot.projects,
+      seededProjects: defaultSeededProjects,
     });
 
     return { profile, projects, source: 'live' };

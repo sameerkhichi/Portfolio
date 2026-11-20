@@ -1,0 +1,24 @@
+{
+  "id": "gh-leetcode-library",
+  "repoName": "leetcode-library",
+  "title": "Leetcode Library",
+  "shortDescription": "Storing all leetcode and similar questions that I have solved.",
+  "fullSummary": "Storing all leetcode and similar questions that I have solved.",
+  "highlights": [
+    "Primary technologies: Python",
+    "Last active: Nov 2026",
+    "Open-source repository on GitHub"
+  ],
+  "date": "2026-11-18T21:05:49Z",
+  "displayDate": "Nov 2026",
+  "categories": [],
+  "techStack": [
+    "Python"
+  ],
+  "githubUrl": "https://github.com/sameerkhichi/leetcode-library",
+  "images": [],
+  "stars": 0,
+  "fork": false,
+  "isPrivate": false,
+  "source": "github"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "gh-traffic_simulator",
+  "repoName": "Traffic_Simulator",
+  "title": "Traffic Simulator",
+  "shortDescription": "Designing an optimal and futureproof intersection using an existing framework to improve traffic flow through populated areas",
+  "fullSummary": "Designing an optimal and futureproof intersection using an existing framework to improve traffic flow through populated areas",
+  "highlights": [
+    "Primary technologies: Python",
+    "Last active: Feb 2025",
+    "Open-source repository on GitHub"
+  ],
+  "date": "2025-03-01T03:32:21Z",
+  "displayDate": "Feb 2025",
+  "categories": [],
+  "techStack": [
+    "Python"
+  ],
+  "githubUrl": "https://github.com/sameerkhichi/Traffic_Simulator",
+  "images": [],
+  "stars": 0,
+  "fork": false,
+  "isPrivate": false,
+  "source": "github"
+}

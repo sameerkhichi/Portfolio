@@ -1,0 +1,25 @@
+{
+  "id": "gh-mcmaster_shuttle_tracker",
+  "repoName": "McMaster_Shuttle_Tracker",
+  "title": "McMaster Shuttle Tracker",
+  "shortDescription": "A web app tracking and sharing McMaster parking shuttle services.",
+  "fullSummary": "A web app tracking and sharing McMaster parking shuttle services.",
+  "highlights": [
+    "Primary technologies: Python",
+    "Last active: Jul 2025",
+    "Open-source repository on GitHub"
+  ],
+  "date": "2025-08-01T01:49:44Z",
+  "displayDate": "Jul 2025",
+  "categories": [],
+  "techStack": [
+    "Python"
+  ],
+  "githubUrl": "https://github.com/sameerkhichi/McMaster_Shuttle_Tracker",
+  "liveUrl": "https://mcmaster-shuttle-tracker.onrender.com",
+  "images": [],
+  "stars": 0,
+  "fork": false,
+  "isPrivate": false,
+  "source": "github"
+}

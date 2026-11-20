@@ -1,0 +1,24 @@
+{
+  "id": "gh-pdf_merger",
+  "repoName": "PDF_Merger",
+  "title": "PDF Merger",
+  "shortDescription": "Worried about using online PDF mergers with sensitive data? Fear not, you can now merge them locally! ",
+  "fullSummary": "Worried about using online PDF mergers with sensitive data? Fear not, you can now merge them locally! ",
+  "highlights": [
+    "Primary technologies: Python",
+    "Last active: Jan 2025",
+    "Open-source repository on GitHub"
+  ],
+  "date": "2025-01-16T23:35:39Z",
+  "displayDate": "Jan 2025",
+  "categories": [],
+  "techStack": [
+    "Python"
+  ],
+  "githubUrl": "https://github.com/sameerkhichi/PDF_Merger",
+  "images": [],
+  "stars": 0,
+  "fork": false,
+  "isPrivate": false,
+  "source": "github"
+}

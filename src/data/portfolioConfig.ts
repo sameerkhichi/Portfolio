@@ -5,7 +5,7 @@ import {
   type ProjectItem,
   type ProjectOverride,
 } from '../types/portfolio';
-import { loadCustomProjects } from './customProjectsLoader';
+import { loadModularProjects } from './projectsLoader';
 
 export { PROJECT_CATEGORIES };
 export type { ProjectCategory };
@@ -29,52 +29,23 @@ export const FALLBACK_PROFILE: ProfileData = {
   linkedinUrl: LINKEDIN_URL,
 };
 
-/**
- * Per-repository configuration & category classification for public GitHub repos,
- * keyed by GitHub repository name.
- *
- * Available categories (shown in the top filter bar):
- * 'Web App' | 'AI/ML' | 'Cybersecurity' | 'Software/Hardware' | 'Mobile Dev' |
- * 'Video Game Dev' | 'Systems & Tools' | 'Cloud & DevOps' | 'Data Science'
- */
-export const PROJECT_OVERRIDES: Record<string, ProjectOverride> = {
-  'leetcode-library': {
-    categories: ['Systems & Tools'],
-  },
-  BLEScraper: {
-    categories: ['Mobile Dev', 'Software/Hardware', 'Cybersecurity'],
-  },
-  Facial_Recognition_Model: {
-    categories: ['AI/ML'],
-  },
-  McMaster_Shuttle_Tracker: {
-    categories: ['Web App'],
-  },
-  'Maze-Runner': {
-    categories: ['Video Game Dev', 'Systems & Tools'],
-  },
-  Traffic_Simulator: {
-    categories: ['Systems & Tools', 'Data Science'],
-  },
-  AI_Checklist: {
-    categories: ['AI/ML', 'Web App', 'Cloud & DevOps'],
-  },
-  PDF_Merger: {
-    categories: ['Systems & Tools', 'Cybersecurity'],
-  },
-  keylogger: {
-    categories: ['Cybersecurity', 'Systems & Tools'],
-  },
-  'TicTacToe-Command-Line': {
-    categories: ['Video Game Dev'],
-  },
-  'AimTraining-Game': {
-    categories: ['Video Game Dev'],
-  },
-};
+const modularProjects = loadModularProjects();
 
 /**
- * Modular custom projects automatically loaded from `src/data/customProjects/<Project Name>/project.json`.
- * See `src/data/customProjects/usage.txt` for how to add new projects and screenshots.
+ * Auto-synced GitHub project baselines loaded from `src/data/Projects/<RepoName>/github.json`.
  */
-export const CUSTOM_PROJECTS: ProjectItem[] = loadCustomProjects();
+export const MODULAR_GITHUB_PROJECTS: ProjectItem[] =
+  modularProjects.githubSeededProjects;
+
+/**
+ * Per-repo manual overrides & local screenshots loaded from
+ * `src/data/Projects/<RepoName>/override.json` and `screenshots/`.
+ */
+export const PROJECT_OVERRIDES: Record<string, ProjectOverride> =
+  modularProjects.overridesByRepo;
+
+/**
+ * Standalone custom/private projects loaded from
+ * `src/data/Projects/<Project Name>/project.json` and `screenshots/`.
+ */
+export const CUSTOM_PROJECTS: ProjectItem[] = modularProjects.customProjects;

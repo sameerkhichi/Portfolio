@@ -1,31 +1,40 @@
 /**
- * Optional build-time & local GitHub sync script.
+ * Build-time & local GitHub sync script.
  *
- * Fetches profile & repository metadata for `sameerkhichi` and writes
- * a public-safe snapshot to `src/data/seededProjects.json`.
- *
- * - Without GITHUB_TOKEN: fetches public profile & public repositories.
- * - With GITHUB_TOKEN (or GitHub Actions secret PORTFOLIO_GH_TOKEN):
- *   fetches both public AND private repository metadata (name, description,
- *   dates, languages, topics — never private source code) and flags private
- *   repos with `isPrivate: true`.
+ * Fetches profile & repository metadata for `sameerkhichi` and:
+ * 1. Updates `src/data/seededProjects.json` (profile bio & snapshot backup).
+ * 2. Auto-scaffolds/updates `src/data/Projects/<RepoName>/github.json` for every
+ *    visible repository.
+ * 3. Creates a starter `src/data/Projects/<RepoName>/override.json` ONLY if it
+ *    does NOT already exist — NEVER overwriting your manual edits or `screenshots/`.
  */
 
-import { writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const USERNAME = process.env.GITHUB_USERNAME || 'sameerkhichi';
 const TOKEN = process.env.GITHUB_TOKEN || '';
+const HIDDEN_REPOS = new Set(['portfolio', 'sameerkhichi', 'anticeldocs']);
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUT_PATH = resolve(__dirname, '../src/data/seededProjects.json');
+const OUT_SNAPSHOT_PATH = resolve(__dirname, '../src/data/seededProjects.json');
+const PROJECTS_DIR = resolve(__dirname, '../src/data/Projects');
 
 const headers = {
   Accept: 'application/vnd.github+json',
   'User-Agent': 'sameerkhichi-portfolio-sync',
   ...(TOKEN ? { Authorization: `Bearer ${TOKEN}` } : {}),
 };
+
+async function fileExists(filePath) {
+  try {
+    await access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 async function fetchJson(url) {
   const res = await fetch(url, { headers });
@@ -110,6 +119,7 @@ async function main() {
       };
     });
 
+  // 1. Write snapshot backup & profile bio
   const snapshot = {
     syncedAt: new Date().toISOString(),
     profile: {
@@ -122,10 +132,51 @@ async function main() {
     },
     projects: cleanedRepos,
   };
+  await writeFile(OUT_SNAPSHOT_PATH, JSON.stringify(snapshot, null, 2) + '\n', 'utf8');
 
-  await writeFile(OUT_PATH, JSON.stringify(snapshot, null, 2) + '\n', 'utf8');
+  // 2. Scaffold / refresh modular project folders in `src/data/Projects/<RepoName>/`
+  await mkdir(PROJECTS_DIR, { recursive: true });
+  let scaffoldedCount = 0;
+  let newOverridesCreated = 0;
+
+  for (const repo of cleanedRepos) {
+    if (HIDDEN_REPOS.has(repo.repoName.toLowerCase())) continue;
+
+    const repoDir = resolve(PROJECTS_DIR, repo.repoName);
+    const overridePath = resolve(repoDir, 'override.json');
+    const githubJsonPath = resolve(repoDir, 'github.json');
+
+    // Skip forks unless the user explicitly created an override featuring them
+    if (repo.fork) {
+      if (!(await fileExists(overridePath))) continue;
+      try {
+        const parsed = JSON.parse(await readFile(overridePath, 'utf8'));
+        if (!parsed.featured) continue;
+      } catch {
+        continue;
+      }
+    }
+
+    await mkdir(repoDir, { recursive: true });
+    await writeFile(githubJsonPath, JSON.stringify(repo, null, 2) + '\n', 'utf8');
+    scaffoldedCount++;
+
+    // Create starter override.json ONLY if it doesn't already exist
+    if (!(await fileExists(overridePath))) {
+      const starterOverride = {
+        categories: [],
+      };
+      await writeFile(
+        overridePath,
+        JSON.stringify(starterOverride, null, 2) + '\n',
+        'utf8'
+      );
+      newOverridesCreated++;
+    }
+  }
+
   console.log(
-    `Wrote ${cleanedRepos.length} repositories and profile bio to ${OUT_PATH}`
+    `Synced ${cleanedRepos.length} repos -> updated ${scaffoldedCount} project folders in src/data/Projects/ (${newOverridesCreated} new starter override.json created; existing overrides untouched).`
   );
 }
 

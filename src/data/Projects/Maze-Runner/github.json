@@ -1,0 +1,24 @@
+{
+  "id": "gh-maze-runner",
+  "repoName": "Maze-Runner",
+  "title": "Maze Runner",
+  "shortDescription": "This repository is for Assignment 3 of 2AA4 Intro to Software Engineering. It is a tested and refactored version of Assignment 1's maze runner.",
+  "fullSummary": "This repository is for Assignment 3 of 2AA4 Intro to Software Engineering. It is a tested and refactored version of Assignment 1's maze runner.",
+  "highlights": [
+    "Primary technologies: Java",
+    "Last active: Apr 2025",
+    "Open-source repository on GitHub"
+  ],
+  "date": "2025-04-03T03:40:38Z",
+  "displayDate": "Apr 2025",
+  "categories": [],
+  "techStack": [
+    "Java"
+  ],
+  "githubUrl": "https://github.com/sameerkhichi/Maze-Runner",
+  "images": [],
+  "stars": 0,
+  "fork": false,
+  "isPrivate": false,
+  "source": "github"
+}
