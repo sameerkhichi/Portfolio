@@ -1,0 +1,29 @@
+{
+  "shortDescription": "Self-hosted WireGuard VPN server on a Raspberry Pi with DuckDNS dynamic IP validation, automated self-healing configs, power-outage recovery, firewall allowlisting, and per-device QR code provisioning—eliminating the need for a paid static IP.",
+  "fullSummary": "Engineered a private, zero-subscription VPN server hosted on a dedicated Raspberry Pi to provide encrypted remote access from laptops and mobile devices. Built on WireGuard with strict peer-level access control, every authorized device is provisioned with its own Curve25519 public/private keypair and dedicated /32 tunnel IP assignment backed by firewall allowlisting, full-tunnel IPv4/IPv6 routing, Cloudflare DNS (1.1.1.1), and persistent NAT keepalives. To avoid paying an ISP for a static IP address, custom Bash and Python automation continuously validates public IP changes through DuckDNS, dynamically updates configurations to prevent downtime, and automatically resets and restores the VPN server after power outages or router restarts. New mobile clients onboard in seconds via terminal-generated qrencode QR codes, alongside portable tunnel config imports for Windows laptops.",
+  "highlights": [
+    "Per-Device Cryptographic Isolation & Firewall Rules: Generates unique WireGuard public/private keypairs and dedicated /32 subnet IP assignments per client, enforced by strict firewall rules allowing only authorized peers to connect.",
+    "Dynamic IP Validation & Zero Static-IP Cost: Combines DuckDNS with custom Bash and Python scripts to detect ISP public IP changes, auto-update server configs, and maintain zero-downtime connectivity without paying for a static IP.",
+    "Power-Outage Auto-Recovery: Automatically restarts, re-validates network state, and brings the WireGuard tunnel back online unattended after power loss or router reboots.",
+    "Instant Mobile & Desktop Provisioning: Generates scannable ANSI QR codes with qrencode for one-tap mobile setup alongside .conf tunnel files for laptops, routing full IPv4/IPv6 traffic with persistent keepalives and 1.1.1.1 DNS."
+  ],
+  "date": "2026-01-15T00:00:00Z",
+  "displayDate": "Jan 2026",
+  "categories": [
+    "Cybersecurity",
+    "Software/Hardware",
+    "Systems & Tools"
+  ],
+  "techStack": [
+    "Raspberry Pi",
+    "Linux",
+    "WireGuard",
+    "DuckDNS",
+    "Bash",
+    "Python",
+    "Firewall / Networking",
+    "QR Provisioning"
+  ],
+  "isPrivate": true,
+  "featured": true
+}
