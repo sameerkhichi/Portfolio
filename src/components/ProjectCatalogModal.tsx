@@ -126,7 +126,7 @@ export function ProjectCatalogModal({
               onClick={onBackToNetwork}
             >
               <ArrowLeft size={15} color="var(--aqua-core)" />
-              <span>Back to Network</span>
+              <span>Back</span>
             </button>
 
             <button

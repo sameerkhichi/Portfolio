@@ -284,12 +284,12 @@ export function NeuralCanvas({
       lens.alpha += (lensTargetAlpha - lens.alpha) * (1 - Math.exp(-9 * dt));
 
       if (lens.alpha > 0.015) {
-        const lensRadius = 115;
-        const hexR = 13;
+        const lensRadius = 78;
+        const hexR = 9;
         const colStep = Math.sqrt(3) * hexR;
         const rowStep = 1.5 * hexR;
 
-        // Soft holographic spotlight beneath the bulging dome
+        // Soft holographic spotlight concentrated at cursor peak, dissipating fast outward
         const domeGlow = ctx.createRadialGradient(
           lens.x,
           lens.y,
@@ -298,8 +298,9 @@ export function NeuralCanvas({
           lens.y,
           lensRadius
         );
-        domeGlow.addColorStop(0, `rgba(${accentRgb}, ${0.11 * lens.alpha})`);
-        domeGlow.addColorStop(0.5, `rgba(${secondaryRgb}, ${0.04 * lens.alpha})`);
+        domeGlow.addColorStop(0, `rgba(${accentRgb}, ${0.12 * lens.alpha})`);
+        domeGlow.addColorStop(0.38, `rgba(${secondaryRgb}, ${0.032 * lens.alpha})`);
+        domeGlow.addColorStop(0.72, `rgba(${accentRgb}, ${0.006 * lens.alpha})`);
         domeGlow.addColorStop(1, `rgba(${accentRgb}, 0)`);
         ctx.fillStyle = domeGlow;
         ctx.beginPath();
@@ -314,12 +315,12 @@ export function NeuralCanvas({
             return { x: px, y: py, f: 0 };
           }
           const u = 1 - dist / lensRadius;
-          const f = u * u * (3 - 2 * u); // Smooth cubic dome falloff
+          // Steeper dissipation curve so edges flatten and melt smoothly into the background
+          const f = Math.pow(u, 2.6);
           if (dist < 0.001) {
             return { x: px, y: py, f };
           }
-          // Outward spherical perspective bulge toward viewer
-          const bulge = Math.sin(u * Math.PI * 0.92) * 12 * lens.alpha;
+          const bulge = Math.sin(u * Math.PI) * Math.pow(u, 1.35) * 9.5 * lens.alpha;
           const invDist = 1 / dist;
           return {
             x: px + dx * invDist * bulge,
@@ -349,7 +350,7 @@ export function NeuralCanvas({
 
             const warpedCenter = warpPoint(cx, cy);
             const cellAlpha = warpedCenter.f * lens.alpha;
-            if (cellAlpha <= 0.015) continue;
+            if (cellAlpha <= 0.012) continue;
 
             // Compute 6 pointy-top hex vertices with spherical bulge warp
             const verts: Array<{ x: number; y: number; f: number; key: string }> = [];
@@ -364,26 +365,26 @@ export function NeuralCanvas({
               });
             }
 
-            // Hex perimeter edges
+            // Hex perimeter edges (dissipating smoothly to hairline toward outer rim)
             ctx.beginPath();
             ctx.moveTo(verts[0].x, verts[0].y);
             for (let k = 1; k < 6; k++) {
               ctx.lineTo(verts[k].x, verts[k].y);
             }
             ctx.closePath();
-            ctx.strokeStyle = `rgba(${accentRgb}, ${cellAlpha * 0.38})`;
-            ctx.lineWidth = 0.55 + cellAlpha * 0.7;
+            ctx.strokeStyle = `rgba(${accentRgb}, ${cellAlpha * 0.44})`;
+            ctx.lineWidth = 0.4 + cellAlpha * 0.72;
             ctx.stroke();
 
-            // Inner constellation triangulation spokes near the dome peak
-            if (cellAlpha > 0.16) {
+            // Inner constellation triangulation spokes right near the bulging apex
+            if (cellAlpha > 0.22) {
               ctx.beginPath();
               for (let k = 0; k < 6; k += 2) {
                 ctx.moveTo(warpedCenter.x, warpedCenter.y);
                 ctx.lineTo(verts[k].x, verts[k].y);
               }
-              ctx.strokeStyle = `rgba(${secondaryRgb}, ${cellAlpha * 0.22})`;
-              ctx.lineWidth = 0.5;
+              ctx.strokeStyle = `rgba(${secondaryRgb}, ${cellAlpha * 0.24})`;
+              ctx.lineWidth = 0.45;
               ctx.stroke();
 
               // Center constellation star dot
@@ -391,20 +392,20 @@ export function NeuralCanvas({
               ctx.arc(
                 warpedCenter.x,
                 warpedCenter.y,
-                0.6 + cellAlpha * 0.9,
+                0.45 + cellAlpha * 0.85,
                 0,
                 Math.PI * 2
               );
-              ctx.fillStyle = `rgba(${softRgb}, ${cellAlpha * 0.62})`;
+              ctx.fillStyle = `rgba(${softRgb}, ${cellAlpha * 0.65})`;
               ctx.fill();
             }
 
             // Glowing constellation dots at hex vertices (deduped so shared corners stay clean)
             for (const v of verts) {
-              if (v.f <= 0.04 || drawnVertices.has(v.key)) continue;
+              if (v.f <= 0.03 || drawnVertices.has(v.key)) continue;
               drawnVertices.add(v.key);
               const va = v.f * lens.alpha;
-              const dotR = 0.65 + va * 1.15;
+              const dotR = 0.45 + va * 1.1;
               ctx.beginPath();
               ctx.arc(v.x, v.y, dotR, 0, Math.PI * 2);
               ctx.fillStyle =
