@@ -108,17 +108,12 @@ export function App() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  // Unlock Web Audio API & pre-mount iOS haptic trigger on mobile and desktop
+  // Unlock Web Audio API in capture phase (BEFORE React button handlers) & keep alive on resume
   useEffect(() => {
     initHaptics();
     const tryUnlock = () => {
-      nanotechAudio.unlock();
-      if (nanotechAudio.isRunning()) {
-        window.removeEventListener('touchstart', tryUnlock);
-        window.removeEventListener('touchend', tryUnlock);
-        window.removeEventListener('click', tryUnlock);
-        window.removeEventListener('pointerdown', tryUnlock);
-        window.removeEventListener('keydown', tryUnlock);
+      if (!nanotechAudio.isRunning()) {
+        nanotechAudio.unlock();
       }
     };
     const onVisibility = () => {
@@ -126,18 +121,23 @@ export function App() {
         nanotechAudio.unlock();
       }
     };
-    window.addEventListener('touchstart', tryUnlock, { passive: true });
-    window.addEventListener('touchend', tryUnlock, { passive: true });
-    window.addEventListener('click', tryUnlock, { passive: true });
-    window.addEventListener('pointerdown', tryUnlock, { passive: true });
-    window.addEventListener('keydown', tryUnlock, { passive: true });
+    const captureOpts = { capture: true, passive: true } as const;
+    window.addEventListener('pointerdown', tryUnlock, captureOpts);
+    window.addEventListener('touchstart', tryUnlock, captureOpts);
+    window.addEventListener('touchend', tryUnlock, captureOpts);
+    window.addEventListener('mousedown', tryUnlock, captureOpts);
+    window.addEventListener('click', tryUnlock, captureOpts);
+    window.addEventListener('keydown', tryUnlock, captureOpts);
+    window.addEventListener('wheel', tryUnlock, captureOpts);
     document.addEventListener('visibilitychange', onVisibility);
     return () => {
-      window.removeEventListener('touchstart', tryUnlock);
-      window.removeEventListener('touchend', tryUnlock);
-      window.removeEventListener('click', tryUnlock);
-      window.removeEventListener('pointerdown', tryUnlock);
-      window.removeEventListener('keydown', tryUnlock);
+      window.removeEventListener('pointerdown', tryUnlock, true);
+      window.removeEventListener('touchstart', tryUnlock, true);
+      window.removeEventListener('touchend', tryUnlock, true);
+      window.removeEventListener('mousedown', tryUnlock, true);
+      window.removeEventListener('click', tryUnlock, true);
+      window.removeEventListener('keydown', tryUnlock, true);
+      window.removeEventListener('wheel', tryUnlock, true);
       document.removeEventListener('visibilitychange', onVisibility);
     };
   }, []);

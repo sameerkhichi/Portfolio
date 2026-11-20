@@ -21,6 +21,8 @@ class NanotechAudioEngine {
   private noiseBuffer: AudioBuffer | null = null;
   private muted: boolean = false;
   private primedSilentBuffer = false;
+  private lastResumedAtMs = 0;
+  private resumePromise: Promise<void> | null = null;
   private lastMovementTickAt = 0;
   private lastHoverAt = 0;
 
@@ -54,10 +56,12 @@ class NanotechAudioEngine {
     this.muted = muted;
     this.persistMute(muted);
     if (this.masterGain && this.ctx) {
+      const now = this.ctx.currentTime;
+      this.masterGain.gain.cancelScheduledValues(now);
       this.masterGain.gain.setTargetAtTime(
         muted ? 0 : MASTER_VOLUME,
-        this.ctx.currentTime,
-        0.02
+        now,
+        0.015
       );
     }
   }
@@ -74,6 +78,42 @@ class NanotechAudioEngine {
       this.playNodeFocus();
     }
     return next;
+  }
+
+  private primeSilentBuffer(ctx: AudioContext): void {
+    if (this.primedSilentBuffer) return;
+    try {
+      const silentBuf = ctx.createBuffer(1, 1, 22050);
+      const src = ctx.createBufferSource();
+      src.buffer = silentBuf;
+      src.connect(ctx.destination);
+      src.start(0);
+      if (ctx.state === 'running') {
+        this.primedSilentBuffer = true;
+      }
+    } catch {
+      // Ignore if context cannot start yet
+    }
+  }
+
+  private ensureMasterGainLevel(ctx: AudioContext): void {
+    if (!this.masterGain) return;
+    const target = this.muted ? 0 : MASTER_VOLUME;
+    if (Math.abs(this.masterGain.gain.value - target) > 0.01) {
+      this.masterGain.gain.cancelScheduledValues(ctx.currentTime);
+      this.masterGain.gain.setValueAtTime(target, ctx.currentTime);
+    }
+  }
+
+  /**
+   * Returns a safe start time offset: if the audio hardware just woke up from
+   * cold start, adds a brief 45ms cushion so the first sound isn't swallowed
+   * while laptop/Bluetooth/mobile speakers spin up.
+   */
+  private getSafeStartTime(ctx: AudioContext, baseOffset = 0.008): number {
+    const sinceResume = Date.now() - this.lastResumedAtMs;
+    const warmup = sinceResume < 110 ? 0.045 : 0;
+    return ctx.currentTime + baseOffset + warmup;
   }
 
   public unlock(): boolean {
@@ -97,44 +137,61 @@ class NanotechAudioEngine {
 
     if (!this.ctx) {
       try {
-        this.ctx = new AudioCtx();
-        this.compressor = this.ctx.createDynamicsCompressor();
+        const ctx = new AudioCtx();
+        this.ctx = ctx;
+        this.compressor = ctx.createDynamicsCompressor();
         this.compressor.threshold.value = -14;
         this.compressor.knee.value = 18;
         this.compressor.ratio.value = 6;
         this.compressor.attack.value = 0.003;
         this.compressor.release.value = 0.12;
 
-        this.masterGain = this.ctx.createGain();
+        this.masterGain = ctx.createGain();
         this.masterGain.gain.value = this.muted ? 0 : MASTER_VOLUME;
 
         this.compressor.connect(this.masterGain);
-        this.masterGain.connect(this.ctx.destination);
-        this.noiseBuffer = this.createNoiseBuffer(this.ctx);
+        this.masterGain.connect(ctx.destination);
+        this.noiseBuffer = this.createNoiseBuffer(ctx);
+
+        ctx.addEventListener?.('statechange', () => {
+          if (ctx.state === 'running') {
+            this.lastResumedAtMs = Date.now();
+            this.ensureMasterGainLevel(ctx);
+            this.primeSilentBuffer(ctx);
+          }
+        });
+
+        if (ctx.state === 'running') {
+          this.lastResumedAtMs = Date.now();
+        }
       } catch {
         this.ctx = null;
         return false;
       }
     }
 
-    // Play a 1-sample silent buffer on first user gesture (required by iOS WebKit to unlock audio output)
-    if (!this.primedSilentBuffer && this.ctx) {
-      try {
-        const silentBuf = this.ctx.createBuffer(1, 1, 22050);
-        const src = this.ctx.createBufferSource();
-        src.buffer = silentBuf;
-        src.connect(this.ctx.destination);
-        src.start(0);
-        this.primedSilentBuffer = true;
-      } catch {
-        // Ignore if context cannot start yet
-      }
-    }
+    const ctx = this.ctx;
+    this.ensureMasterGainLevel(ctx);
+    this.primeSilentBuffer(ctx);
 
-    if (this.ctx.state !== 'running') {
-      void this.ctx.resume().catch(() => {
-        // Browser may still require direct user gesture
-      });
+    if (ctx.state !== 'running') {
+      if (!this.resumePromise) {
+        this.resumePromise = ctx
+          .resume()
+          .then(() => {
+            if (ctx.state === 'running') {
+              this.lastResumedAtMs = Date.now();
+              this.ensureMasterGainLevel(ctx);
+              this.primeSilentBuffer(ctx);
+            }
+          })
+          .catch(() => {
+            // Browser may still require direct user gesture
+          })
+          .finally(() => {
+            this.resumePromise = null;
+          });
+      }
     }
 
     return true;
@@ -153,34 +210,45 @@ class NanotechAudioEngine {
   }
 
   /**
-   * Executes a sound callback once the AudioContext is running, handling mobile
-   * async `resume()` cleanly instead of dropping the sound on the first tap.
+   * Executes a sound callback once the AudioContext is running.
+   *
+   * - `createIfMissing = true` (explicit clicks/taps/transitions): unlocks/resumes
+   *   and schedules immediately once running (with cold-start DAC warmup cushion).
+   * - `createIfMissing = false` (passive hover / movement ticks): never creates a
+   *   premature suspended AudioContext before the user's first gesture.
    */
   private withReadyContext(
-    callback: (ctx: AudioContext) => void,
-    allowAsyncResume = true
+    callback: (ctx: AudioContext, startTime: number) => void,
+    createIfMissing = true
   ): boolean {
     if (this.muted) return false;
+
     if (!this.ctx || !this.compressor) {
+      if (!createIfMissing) return false;
       if (!this.unlock()) return false;
     }
     if (!this.ctx || !this.compressor) return false;
 
-    if (this.ctx.state === 'running') {
-      callback(this.ctx);
+    const ctx = this.ctx;
+    this.ensureMasterGainLevel(ctx);
+
+    if (ctx.state === 'running') {
+      callback(ctx, this.getSafeStartTime(ctx));
       return true;
     }
 
-    if (!allowAsyncResume) {
+    if (!createIfMissing) {
       return false;
     }
 
-    const ctx = this.ctx;
     void ctx
       .resume()
       .then(() => {
         if (!this.muted && this.ctx === ctx && ctx.state === 'running') {
-          callback(ctx);
+          this.lastResumedAtMs = Date.now();
+          this.ensureMasterGainLevel(ctx);
+          this.primeSilentBuffer(ctx);
+          callback(ctx, this.getSafeStartTime(ctx, 0.015));
         }
       })
       .catch(() => {
@@ -302,8 +370,7 @@ class NanotechAudioEngine {
    * Produces a shimmering cascading metallic nanotech trickle radiating outward.
    */
   public playAssembleCascade(particleCount = 15): void {
-    this.withReadyContext((ctx) => {
-      const now = ctx.currentTime + 0.01;
+    this.withReadyContext((_ctx, now) => {
       this.scheduleMagneticSweep(now, 240, 118, 0.34, 0.1);
 
       let offset = 0;
@@ -324,15 +391,14 @@ class NanotechAudioEngine {
         });
         offset += step;
       }
-    });
+    }, true);
   }
 
   /**
    * Played when zooming into a node/catalog or zooming back out.
    */
   public playZoomTransition(direction: 'in' | 'out'): void {
-    this.withReadyContext((ctx) => {
-      const now = ctx.currentTime + 0.008;
+    this.withReadyContext((_ctx, now) => {
       const grains = 9;
 
       this.scheduleMagneticSweep(
@@ -358,7 +424,7 @@ class NanotechAudioEngine {
         });
         offset += 0.017 + Math.random() * 0.011;
       }
-    });
+    }, true);
   }
 
   /**
@@ -373,8 +439,7 @@ class NanotechAudioEngine {
     }
     this.lastMovementTickAt = nowMs;
 
-    return this.withReadyContext((ctx) => {
-      const now = ctx.currentTime + 0.004;
+    return this.withReadyContext((_ctx, now) => {
       const clampedIntensity = Math.max(0.15, Math.min(1, intensity));
       const microCount = clampedIntensity > 0.65 ? 3 : 2;
 
@@ -399,8 +464,7 @@ class NanotechAudioEngine {
     if (nowMs - this.lastHoverAt < 90) return;
     this.lastHoverAt = nowMs;
 
-    this.withReadyContext((ctx) => {
-      const now = ctx.currentTime + 0.003;
+    this.withReadyContext((_ctx, now) => {
       this.scheduleMetallicGrain({
         startTime: now,
         baseFreq: 2180 + (Math.random() - 0.5) * 180,
@@ -416,9 +480,7 @@ class NanotechAudioEngine {
    * Dual-grain metallic lock ping when focusing a project node (1st click).
    */
   public playNodeFocus(): void {
-    this.withReadyContext((ctx) => {
-      const now = ctx.currentTime + 0.005;
-
+    this.withReadyContext((_ctx, now) => {
       this.scheduleMetallicGrain({
         startTime: now,
         baseFreq: 1540,
@@ -443,7 +505,7 @@ class NanotechAudioEngine {
         pan: 0,
         bright: true,
       });
-    });
+    }, true);
   }
 }
 
