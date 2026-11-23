@@ -72,11 +72,25 @@ export function usePinchGesture({
         return;
       }
 
-      // In About Me landing: trackpad pinch-out OR mouse wheel scroll-down zooms out to Project Library
+      // In About Me landing: trackpad pinch-out ALWAYS zooms out; normal wheel lets user scroll
+      // down to read the bio first, then zooms out once at the bottom (or when no scroll is needed).
       if (viewMode === 'ABOUT_FULLSCREEN') {
+        if (!e.ctrlKey) {
+          const aboutEl = (e.target as HTMLElement | null)?.closest(
+            '.about-overlay'
+          ) as HTMLElement | null;
+          if (aboutEl && aboutEl.scrollHeight > aboutEl.clientHeight + 4) {
+            const atBottom =
+              aboutEl.scrollTop + aboutEl.clientHeight >= aboutEl.scrollHeight - 4;
+            if (normalizedDeltaY < 0 || !atBottom) {
+              return;
+            }
+          }
+        }
+
         e.preventDefault();
         if (normalizedDeltaY > 0) {
-          const threshold = e.ctrlKey ? 82 : 160;
+          const threshold = e.ctrlKey ? 82 : 180;
           wheelPinchAccumRef.current += normalizedDeltaY;
           const progress = Math.min(1, wheelPinchAccumRef.current / threshold);
           onAboutPinchProgress?.(progress);

@@ -6,8 +6,9 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-react';
+import { ABOUT_DETAILS } from '../data/portfolioConfig';
 import type { AccentTheme, AccentThemeId } from '../data/themes';
-import type { ProfileData } from '../types/portfolio';
+import type { ProfileData, ProjectCategory } from '../types/portfolio';
 import { nanotechAudio } from '../utils/nanotechAudio';
 import { triggerHaptic } from '../utils/haptics';
 import { ThemePicker } from './ThemePicker';
@@ -15,6 +16,7 @@ import { ThemePicker } from './ThemePicker';
 interface AboutOverlayProps {
   profile: ProfileData;
   projectCount: number;
+  projectAreas: ProjectCategory[];
   visible: boolean;
   pinchProgress: number;
   isMuted: boolean;
@@ -27,6 +29,7 @@ interface AboutOverlayProps {
 export function AboutOverlay({
   profile,
   projectCount,
+  projectAreas,
   visible,
   pinchProgress,
   isMuted,
@@ -93,7 +96,10 @@ export function AboutOverlay({
 
       <div className="about-fullscreen-content">
         <header className="about-hero-header">
-          <h1 className="about-name">{profile.name}</h1>
+          <div className="about-name-group">
+            <h1 className="about-name">{profile.name}</h1>
+            <div className="about-city-sub">{ABOUT_DETAILS.city}</div>
+          </div>
 
           <div className="about-links-row">
             <a
@@ -118,10 +124,64 @@ export function AboutOverlay({
               <span>LinkedIn</span>
             </a>
           </div>
+
+          <p className="about-bio">{profile.bio}</p>
         </header>
 
-        <div className="about-bio-section">
-          <p className="about-bio">{profile.bio}</p>
+        {/* Two-Column Liquid Glass Overview: Story (Left) + Quick Reads (Right) */}
+        <div className="about-bento-grid">
+          <article className="about-glass-card about-story-card" aria-label="About Sameer">
+            <div className="section-micro-label">About Me</div>
+            <div className="about-story-body">
+              {ABOUT_DETAILS.storyParagraphs.map((paragraph, idx) => (
+                <p key={idx}>{paragraph}</p>
+              ))}
+            </div>
+          </article>
+
+          <aside className="about-glass-card about-quick-card" aria-label="Quick summary">
+            <div className="about-quick-section">
+              <div className="section-micro-label">Interested Fields</div>
+              <div className="about-pill-group">
+                {ABOUT_DETAILS.interestedFields.map((field) => (
+                  <span key={field} className="about-highlight-pill">
+                    {field}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="about-quick-divider" />
+
+            <div className="about-quick-section">
+              <div className="section-micro-label">Experience &amp; Education</div>
+              <div className="about-exp-list">
+                {ABOUT_DETAILS.experience.map((item) => (
+                  <div key={`${item.role}-${item.organization}`} className="about-exp-item">
+                    <div className="about-exp-role">{item.role}</div>
+                    <div className="about-exp-org">{item.organization}</div>
+                    <div className="about-exp-meta">{item.meta}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {projectAreas.length > 0 && (
+              <>
+                <div className="about-quick-divider" />
+                <div className="about-quick-section">
+                  <div className="section-micro-label">Project Areas</div>
+                  <div className="about-pill-group">
+                    {projectAreas.map((area) => (
+                      <span key={area} className="tech-badge">
+                        {area}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </aside>
         </div>
 
         <div className="about-cta-section">

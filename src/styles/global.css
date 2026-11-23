@@ -621,19 +621,22 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: clamp(72px, 10vh, 112px) clamp(24px, 6vw, 72px) clamp(40px, 7vh, 72px);
+  justify-content: flex-start;
+  padding: clamp(56px, 7vh, 84px) clamp(20px, 5vw, 56px) clamp(36px, 6vh, 60px);
   background: radial-gradient(
-    circle at 50% 42%,
+    circle at 50% 34%,
     rgba(7, 22, 42, 0.52) 0%,
-    rgba(4, 8, 15, 0.84) 68%,
+    rgba(4, 8, 15, 0.85) 68%,
     rgba(2, 5, 10, 0.94) 100%
   );
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   transition: opacity 0.55s var(--ease-tech), transform 0.55s var(--ease-tech);
-  overflow: hidden;
-  touch-action: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .about-overlay.is-exiting {
@@ -651,7 +654,7 @@ button {
   align-items: center;
   justify-content: flex-end;
   pointer-events: none;
-  z-index: 2;
+  z-index: 5;
 }
 
 .about-telemetry {
@@ -667,12 +670,12 @@ button {
 }
 
 .about-fullscreen-content {
-  width: min(920px, 100%);
-  min-height: 100%;
+  width: min(1060px, 100%);
+  margin: auto 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  gap: clamp(26px, 4vh, 38px);
   text-align: center;
   user-select: text;
 }
@@ -681,11 +684,18 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
+}
+
+.about-name-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 
 .about-name {
-  font-size: clamp(3rem, 8.2vw, 5.6rem);
+  font-size: clamp(2.8rem, 7.2vw, 5rem);
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.03;
@@ -694,6 +704,13 @@ button {
   background-clip: text;
   color: transparent;
   filter: drop-shadow(0 0 34px rgba(var(--accent-rgb), 0.16));
+}
+
+.about-city-sub {
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
 }
 
 .about-links-row {
@@ -732,28 +749,160 @@ button {
   outline: none;
 }
 
-.about-bio-section {
-  flex: 1;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(32px, 6vh, 68px) 0;
+.about-bio {
+  font-size: clamp(1rem, 1.55vw, 1.14rem);
+  line-height: 1.72;
+  color: var(--text-secondary);
+  max-width: 64ch;
+  margin: 4px auto 0;
 }
 
-.about-bio {
-  font-size: clamp(1.08rem, 1.9vw, 1.32rem);
-  line-height: 1.85;
+/* About Me Two-Column Liquid Glass Grid */
+.about-bento-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.38fr 1fr;
+  gap: 22px;
+  align-items: stretch;
+  text-align: left;
+}
+
+.about-glass-card {
+  position: relative;
+  padding: 28px 30px;
+  border-radius: 32px;
+  background: linear-gradient(
+    148deg,
+    rgba(18, 34, 58, 0.44) 0%,
+    rgba(8, 16, 30, 0.58) 54%,
+    rgba(4, 10, 20, 0.7) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  backdrop-filter: blur(28px) saturate(190%) brightness(1.06);
+  -webkit-backdrop-filter: blur(28px) saturate(190%) brightness(1.06);
+  box-shadow:
+    0 28px 72px rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    inset 1px 0 0 rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.about-glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse 86% 34% at 20% 0%,
+    rgba(255, 255, 255, 0.13) 0%,
+    rgba(var(--soft-rgb), 0.03) 45%,
+    transparent 74%
+  );
+  pointer-events: none;
+}
+
+.about-story-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.about-story-body p {
+  font-size: 0.96rem;
+  line-height: 1.72;
   color: var(--text-secondary);
-  max-width: 60ch;
-  margin: 0 auto;
+}
+
+.about-story-body p:first-child {
+  font-size: 1.04rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.about-quick-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.about-quick-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.about-quick-divider {
+  height: 1px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.about-pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.about-highlight-pill {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+  background: rgba(var(--accent-rgb), 0.12);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  color: var(--aqua-bright);
+}
+
+.about-exp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.about-exp-item {
+  position: relative;
+  padding-left: 16px;
+}
+
+.about-exp-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--aqua-core);
+  box-shadow: 0 0 8px var(--aqua-core);
+}
+
+.about-exp-role {
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.about-exp-org {
+  font-size: 0.88rem;
+  color: var(--aqua-glow);
+  margin-top: 2px;
+}
+
+.about-exp-meta {
+  font-family: var(--font-mono);
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  margin-top: 3px;
 }
 
 .about-cta-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
+  padding-top: 4px;
 }
 
 .primary-library-btn {
@@ -1598,7 +1747,17 @@ button {
   }
 
   .about-overlay {
-    padding: 76px 20px 38px;
+    padding: 68px 18px 36px;
+  }
+
+  .about-bento-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .about-glass-card {
+    padding: 22px 20px;
+    border-radius: 26px;
   }
 
   .primary-library-btn {

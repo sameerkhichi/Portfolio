@@ -9,11 +9,12 @@ import {
   fetchPortfolioData,
   getSeededPortfolioData,
 } from './services/githubService';
-import type {
-  PositionedProjectNode,
-  ProfileData,
-  ProjectItem,
-  ViewMode,
+import {
+  PROJECT_CATEGORIES,
+  type PositionedProjectNode,
+  type ProfileData,
+  type ProjectItem,
+  type ViewMode,
 } from './types/portfolio';
 import {
   applyThemeToDocument,
@@ -74,6 +75,15 @@ export function App() {
   const selectedNode = useMemo(
     () => nodes.find((n) => n.project.id === selectedNodeId) ?? null,
     [nodes, selectedNodeId]
+  );
+
+  // Active project categories (mirrors the visible selector options on node view)
+  const activeProjectAreas = useMemo(
+    () =>
+      PROJECT_CATEGORIES.filter((category) =>
+        nodes.some((node) => node.project.categories.includes(category))
+      ),
+    [nodes]
   );
 
   // Apply active accent theme tokens to document root
@@ -291,6 +301,7 @@ export function App() {
       <AboutOverlay
         profile={profile}
         projectCount={nodes.length}
+        projectAreas={activeProjectAreas}
         visible={viewMode === 'ABOUT_FULLSCREEN'}
         pinchProgress={aboutPinchProgress}
         isMuted={isMuted}
