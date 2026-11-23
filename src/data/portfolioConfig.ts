@@ -19,7 +19,12 @@ export const CORE_INITIALS = 'SRK';
  * Portfolio, profile README, and AntiCELDocs (replaced by the real AntiCEL app node)
  * are hidden by default.
  */
-export const HIDDEN_REPOS: string[] = ['Portfolio', 'sameerkhichi', 'AntiCELDocs'];
+export const HIDDEN_REPOS: string[] = [
+  'Portfolio',
+  'sameerkhichi',
+  'AntiCELDocs',
+  'leetcode-library',
+];
 
 export const FALLBACK_PROFILE: ProfileData = {
   name: 'Sameer Khichi',

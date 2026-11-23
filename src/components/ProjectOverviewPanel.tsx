@@ -228,7 +228,11 @@ export function ProjectOverviewPanel({
             >
               <ExternalLink size={15} color="var(--aqua-core)" />
               <span>
-                {project.liveUrl.includes('apps.apple.com') ? 'App Store' : 'Live Demo'}
+                {project.liveUrl.includes('apps.apple.com')
+                  ? 'App Store'
+                  : project.liveUrl.includes('drive.google.com')
+                    ? 'Download Build'
+                    : 'Live Demo'}
               </span>
             </a>
           )}

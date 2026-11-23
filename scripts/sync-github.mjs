@@ -15,7 +15,12 @@ import { fileURLToPath } from 'node:url';
 
 const USERNAME = process.env.GITHUB_USERNAME || 'sameerkhichi';
 const TOKEN = process.env.GITHUB_TOKEN || '';
-const HIDDEN_REPOS = new Set(['portfolio', 'sameerkhichi', 'anticeldocs']);
+const HIDDEN_REPOS = new Set([
+  'portfolio',
+  'sameerkhichi',
+  'anticeldocs',
+  'leetcode-library',
+]);
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_SNAPSHOT_PATH = resolve(__dirname, '../src/data/seededProjects.json');

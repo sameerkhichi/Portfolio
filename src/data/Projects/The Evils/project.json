@@ -1,0 +1,26 @@
+{
+  "shortDescription": "A ~2.5-hour Greek mythology puzzle and combat adventure built in Godot 4.7 & GDScript, featuring a five-floor campaign, boss fights, 100+ voiced lines with word-level subtitle sync, and four branching endings.",
+  "fullSummary": "Built in under a month on a $0 budget as a two-person indie game project, The Evils is a puzzle/combat adventure inspired by Greek mythology. You play as Gale, a university professor having a particularly unfortunate day who must descend into Pandora's Box to confront the spirits unleashed upon the world. Combining handmade and AI-generated assets in Godot 4.7 and GDScript, the game delivers roughly 2.5 hours of gameplay across five floors with four possible endings driven by player choices. Available now as a playable Windows beta build (unsigned executable, so Windows SmartScreen may show a standard warning on first launch).",
+  "highlights": [
+    "Five-Floor Branching Campaign: Structured progression with checkpoints and four distinct endings determined by player choices across an average ~2.5-hour playthrough.",
+    "Mythology-Driven Boss Fights & Puzzles: Multiple boss encounters and puzzle/combat sequences tied directly into the Pandora's Box narrative.",
+    "100+ Voiced Lines & Word-Level Subtitle Sync: Over a hundred fully voiced dialogue lines paired with custom word-level audio synchronization for subtitles.",
+    "Custom Character Rigging & Pose Systems: Built custom rigging and pose workflows to drive character animations and movement.",
+    "Godot 4.7 Performance Optimization: Iteratively profiled and tuned rendering, environments, asset loading, and scene management throughout development."
+  ],
+  "date": "2026-11-20T00:00:00Z",
+  "displayDate": "Nov 2026",
+  "categories": [
+    "Video Game Dev"
+  ],
+  "techStack": [
+    "Godot 4.7",
+    "GDScript",
+    "Character Rigging",
+    "Audio / Subtitle Sync",
+    "Render Optimization"
+  ],
+  "liveUrl": "https://drive.google.com/file/d/1HItbiXL1CuINLlIZIAgvmdQ66-CZiDgA/view?usp=sharing",
+  "isPrivate": true,
+  "featured": true
+}
