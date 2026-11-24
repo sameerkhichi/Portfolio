@@ -1,6 +1,6 @@
 {
   "shortDescription": "Production iOS application built for enthusiasts by an enthusiast. A place featuring storage of vehicle service and history records, automated maintenance tracking, document details, monitor vehicle health/telemetry, read and clear diagnostic trouble codes and access generic and proprietary  diagnostic codes for data analysis.",
-  "fullSummary": "CEL: Check Engine Light\nAntiCEL aims to help users track and record vehicle history and maintenance records to keep a consistent and accurate vehicle story. \nAntiCEL is built by an enthusiast for enthusiasts in an effort to make owning a vehicle that much more enjoyable! \n\nTrack maintenance and service records with ease through an interactive 3D model to organize area specific jobs. This fully customizable UI lets users embrace their own character and personality while staying detail oriented and organized.\n\nAside from automated service tracking and record keeping, AntiCEL offers the ability to connect directly to your vehicle via an OBD scanner to read data directly from vehicle control units. Featuring a custom OBD decoder which parses both standard and proprietary manufacturer Parameter ID's (PID's) to provide users with the ability to monitor and analyze live data from the vehicle. AntiCEL data mines the vehicle to provide statistical data with more advanced anomaly detection systems soon to come.\nUsers are able to configure alerts to warn them about low fuel level, faults detected over their drives, and abnormal readings from live sensor data (high temperature warnings).\n\nAntiCEL was designed around the assumption that the adapter would be left in the vehicle at all times. It uses built in safeguards to optimize power efficiency and avoid draining 12V batteries via a custom made Dynamic Proximity Detection System (DPDS). The DPDS learns from the user's phone-adapter connection data to fine tune itself to work perfectly for their specific setup. This auto reconnect feature allows for trend tracking and driving analytics for the user's review, and can be used to alter future driving habits. \n\nWhen it comes to cars, it's all about customizing and personalizing, and when designing AntiCEL, I wanted that same freedom to be available with the tool used to keep those cars in check. You can customize alerts, units, widgets (4 types), UI components all the way down to using your own car as the interactive 3D model!\n\nVehicles largely die out due to lack of maintenance, don't be a victim or a suspect of this tragedy, and start taking care of your car one step at a time, with AntiCEL!\n",
+  "fullSummary": "CEL: Check Engine Light\n\nAntiCEL aims to help users track and record vehicle history and maintenance records to keep a consistent and accurate vehicle story. \nAntiCEL is built by an enthusiast for enthusiasts in an effort to make owning a vehicle that much more enjoyable! \n\nTrack maintenance and service records with ease through an interactive 3D model to organize area specific jobs. This fully customizable UI lets users embrace their own character and personality while staying detail oriented and organized.\n\nAside from automated service tracking and record keeping, AntiCEL offers the ability to connect directly to your vehicle via an OBD scanner to read data directly from vehicle control units. Featuring a custom OBD decoder which parses both standard and proprietary manufacturer Parameter ID's (PID's) to provide users with the ability to monitor and analyze live data from the vehicle. AntiCEL data mines the vehicle to provide statistical data with more advanced anomaly detection systems soon to come.\nUsers are able to configure alerts to warn them about low fuel level, faults detected over their drives, and abnormal readings from live sensor data (high temperature warnings).\n\nAntiCEL was designed around the assumption that the adapter would be left in the vehicle at all times. It uses built in safeguards to optimize power efficiency and avoid draining 12V batteries via a custom made Dynamic Proximity Detection System (DPDS). The DPDS learns from the user's phone-adapter connection data to fine tune itself to work perfectly for their specific setup. This auto reconnect feature allows for trend tracking and driving analytics for the user's review, and can be used to alter future driving habits. \n\nWhen it comes to cars, it's all about customizing and personalizing, and when designing AntiCEL, I wanted that same freedom to be available with the tool used to keep those cars in check. You can customize alerts, units, widgets (4 types), UI components all the way down to using your own car as the interactive 3D model!\n\nVehicles largely die out due to lack of maintenance, don't be a victim or a suspect of this tragedy, and start taking care of your car one step at a time, with AntiCEL!\n",
   "highlights": [
     "Custom OBD-II decoder - Over 17000 fault codes split between 9000+ generic and 8000+ manufacturer specific DTC diagnostics including symptoms, causes, steps, cost and difficulty. Support for over 86 different makes and ability to clear DTC codes and clear check engine lights.",
     "Manufacturer PID/DID data catalog with custom hex command support - Parses and scans manufacturer specific PIDs and DIDs to surface proprietary ECU data beyond standard Mode 01 reads. Make and model specific support to read sensor data for advanced diagnostics.",
@@ -28,57 +28,57 @@
     "Siri Integration",
     "StoreKit 2"
   ],
-  "liveUrl": "https://apps.apple.com/ca/app/anticel/id6808880922",
+  "liveUrl": "https://apple.com",
   "isPrivate": true,
   "featured": true,
   "images": [
     {
-      "src": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/bf/05/1d/bf051dc8-fec3-f4b2-64bd-580dce7fe7b6/Garage-View.png/900x0w.jpg",
+      "src": "https://mzstatic.com",
       "alt": "AntiCEL Garage view",
       "caption": "Garage — Manage all your vehicles and pull down for Quick Scan"
     },
     {
-      "src": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/9b/f3/0a/9bf30a0b-60e1-f37f-e532-3f697af4d36b/Overview-Top.png/900x0w.jpg",
+      "src": "https://mzstatic.com",
       "alt": "AntiCEL Overview top screen",
       "caption": "Overview — Track mileage and date/mileage maintenance reminders"
     },
     {
-      "src": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/a4/f5/93/a4f59357-42bb-ef89-3a03-2dad6d9a5c3e/Overview-Botton.png/900x0w.jpg",
+      "src": "https://mzstatic.com",
       "alt": "AntiCEL Overview details screen",
       "caption": "Overview — Vehicle notes, paint codes, specs, and favourite shops"
     },
     {
-      "src": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/8b/c9/3f/8bc93f46-9503-ea45-8161-37d01dc691f8/History-Top.png/900x0w.jpg",
+      "src": "https://mzstatic.com",
       "alt": "AntiCEL 3D interactive model history",
       "caption": "Interactive 3D History — Explore repairs and mods directly on your vehicle"
     },
     {
-      "src": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/c9/9c/eb/c99ceb05-3d33-c285-5a60-7c4c02b358d5/History-DrivetrainView.png/900x0w.jpg",
+      "src": "https://mzstatic.com",
       "alt": "AntiCEL 3D drivetrain history view",
       "caption": "3D Drivetrain View — Inspect tagged vehicle components and service logs"
     },
     {
-      "src": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/fd/d3/a4/fdd3a4c0-4137-80c4-008b-ee8518fb575a/History-ListView.png/900x0w.jpg",
+      "src": "https://mzstatic.com",
       "alt": "AntiCEL chronological history list",
       "caption": "History List — Complete chronological build and maintenance timeline"
     },
     {
-      "src": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/0d/15/0a/0d150a60-9532-2cac-4088-2db14f1c8cbd/Album.png/900x0w.jpg",
+      "src": "https://mzstatic.com",
       "alt": "AntiCEL vehicle photo album",
       "caption": "Album — Dedicated car photo library with Low Storage Mode"
     },
     {
-      "src": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/fd/98/e7/fd98e733-73d6-5f6b-cdf6-7d81d6490fe5/Documents.png/900x0w.jpg",
+      "src": "https://mzstatic.com",
       "alt": "AntiCEL vehicle documents vault",
       "caption": "Documents — Registration, insurance, bills of sale, and expiry alerts"
     },
     {
-      "src": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/72/63/6a/72636a31-5c1c-c57f-c401-27ef79185eb7/Connect-Page-DESCView.png/900x0w.jpg",
+      "src": "https://mzstatic.com",
       "alt": "AntiCEL Connect OBD-II diagnostics",
       "caption": "AntiCEL Connect — BLE OBD-II live telemetry & fault code scanning"
     },
     {
-      "src": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/15/11/ed/1511edb1-345d-172a-fafa-2718c5067cb1/Connect-Plans.png/900x0w.jpg",
+      "src": "https://mzstatic.com",
       "alt": "AntiCEL Connect plans",
       "caption": "AntiCEL Connect — Flexible subscription or one-time lifetime unlock"
     }
