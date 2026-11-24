@@ -1481,6 +1481,7 @@ button {
   line-height: 1.8;
   color: var(--text-secondary);
   max-width: 82ch;
+  white-space: pre-line;
 }
 
 .catalog-highlights {
