@@ -1,18 +1,34 @@
 {
-  "shortDescription": "Published local-first iOS & iPadOS vehicle management and BLE OBD-II diagnostics tool featuring LiDAR 3D car models, automated maintenance tracking, and deep ECU telemetry.",
-  "fullSummary": "Built to keep Check Engine Lights away without accounts, cloud tracking, or forced subscriptions, AntiCEL unifies a vehicle's maintenance schedule, service history, documents, photos, and live OBD-II diagnostics in one local-first iOS & iPadOS app. Manage vehicles from a central Garage, log repairs and mods onto an interactive 3D model of your own car (scanned with LiDAR or imported via USDZ), scan Carfax reports and receipts automatically, and pair with BLE OBD-II adapters via AntiCEL Connect for live telemetry and 17,000+ fault code breakdowns. Upcoming updates expand AntiCEL Connect with a vehicle data catalog that scans and parses manufacturer-specific PIDs and DIDs for proprietary ECU telemetry beyond standard Mode 01 reads—plus a manual hex command mode for power users to query custom ECU data directly.",
+  "shortDescription": "Production iOS application built for enthusiasts by an enthusiast. A place featuring storage of vehicle service and history records, automated maintenance tracking, document details, monitor vehicle health/telemetry, read and clear diagnostic trouble codes and access generic and proprietary  diagnostic codes for data analysis.",
+  "fullSummary": "CEL: Check Engine Light
+AntiCEL aims to help users track and record vehicle history and maintenance records to keep a consistent and accurate vehicle story. 
+AntiCEL is built by an enthusiast for enthusiasts in an effort to make owning a vehicle that much more enjoyable! 
+
+Track maintenance and service records with ease through an interactive 3D model to organize area specific jobs. This fully customizable UI lets users embrace their own character and personality while staying detail oriented and organized.
+
+Aside from automated service tracking and record keeping, AntiCEL offers the ability to connect directly to your vehicle via an OBD scanner to read data directly from vehicle control units. Featuring a custom OBD decoder which parses both standard and proprietary manufacturer Parameter ID's (PID's) to provide users with the ability to monitor and analyze live data from the vehicle. AntiCEL data mines the vehicle to provide statistical data with more advanced anomaly detection systems soon to come.
+Users are able to configure alerts to warn them about low fuel level, faults detected over their drives, and abnormal readings from live sensor data (high temperature warnings).
+
+AntiCEL was designed around the assumption that the adapter would be left in the vehicle at all times. It uses built in safeguards to optimize power efficiency and avoid draining 12V batteries via a custom made Dynamic Proximity Detection System (DPDS). The DPDS learns from the user's phone-adapter connection data to fine tune itself to work perfectly for their specific setup. This auto reconnect feature allows for trend tracking and driving analytics for the user's review, and can be used to alter future driving habits. 
+
+When it comes to cars, it's all about customizing and personalizing, and when designing AntiCEL, I wanted that same freedom to be available with the tool used to keep those cars in check. You can customize alerts, units, widgets (4 types), UI components all the way down to using your own car as the interactive 3D model!
+
+Vehicles largely die out due to lack of maintenance, don't be a victim or a suspect of this tragedy, and start taking care of your car one step at a time, with AntiCEL!
+",
   "highlights": [
-    "LiDAR 3D Scanning & USDZ Support: Scan your vehicle's exterior and interior with LiDAR (or import custom .usdz models) to explore repair, maintenance, and mod history directly on an interactive 3D model—and display it in a Home Screen widget.",
-    "BLE OBD-II Telemetry & 17,000+ Fault Codes: Pairs with BLE ELM327 adapters via dynamic proximity auto-reconnect, live fuel/coolant/oil temperature monitoring, Quick Scan, and 9,000+ generic + 8,000+ manufacturer-specific DTC diagnostics (symptoms, causes, steps, cost & difficulty).",
-    "Manufacturer PID/DID Data Catalog & Custom Hex Commands (Upcoming): Parses and scans manufacturer-specific PIDs and DIDs to surface proprietary ECU data beyond standard Mode 01 reads, plus manual raw hex command entry for advanced users.",
-    "Automated Records & Reminders: Date/mileage service reminders, document expiry alerts, and Carfax/receipt scanning that automatically creates vehicle history entries.",
-    "Deep iOS Ecosystem & Local-First Privacy: WidgetKit Home & Lock Screen widgets, Siri Integration for hands-free mileage updates, Low Storage Mode album linking, and 100% on-device storage."
+    "Custom OBD-II decoder - Over 17000 fault codes split between 9000+ generic and 8000+ manufacturer specific DTC diagnostics including symptoms, causes, steps, cost and difficulty. Support for over 86 different makes and ability to clear DTC codes and clear check engine lights.",
+    "Manufacturer PID/DID data catalog with custom hex command support - Parses and scans manufacturer specific PIDs and DIDs to surface proprietary ECU data beyond standard Mode 01 reads. Make and model specific support to read sensor data for advanced diagnostics.",
+    "Proprietary Dynamic Proximity Detection System - enabling reliable auto reconnect with safeguards for avoiding draining 12V batteries. Auto Reconnect allows for day-to-day passive monitoring and drive alerts.",
+    "Automated Records and Reminders: Date/mileage service reminders, document expiry alerts and Carfax/receipt scanning via iOS Vision Framework for full automated history event creation.",
+    "LiDAR 3D Scanning and USDZ Support - Scan your own vehicle (exterior and interior) with LiDAR (with import .USDZ support) via Apple's RealityKit Framework to explore history and maintenance records directly on a 3D model of your own vehicle! The 3D model can also be applied to your phone’s home screen and CarPlay widgets for an added personalized touch.",
+“WidgetKit integration with 4 different supported widgets each with small, medium and large options. Sirikit integration for handsfree vehicle data manipulation.”
   ],
   "date": "2026-09-24T07:00:00Z",
   "displayDate": "Sep 2026",
   "categories": [
     "Mobile Dev",
     "Software/Hardware",
+    “AI/ML”,
     "Systems & Tools"
   ],
   "techStack": [
@@ -22,6 +38,7 @@
     "OBD-II / BLE",
     "LiDAR / 3D (USDZ)",
     "WidgetKit",
+    “RealityKit”,
     "Siri Integration",
     "StoreKit 2"
   ],
@@ -81,3 +98,4 @@
     }
   ]
 }
+
